@@ -452,6 +452,44 @@ func GetGlobalStats() Stats {
 	return s
 }
 
+// PermanentlyDeleteOldHouses removes houses that have been marked as deleted for more than 2 months.
+func PermanentlyDeleteOldHouses() (int64, error) {
+	if db == nil {
+		return 0, errors.New("database not initialized")
+	}
+
+	twoMonthsAgo := time.Now().AddDate(0, -2, 0)
+	
+	// Find IDs to delete for logging purposes
+	rows, err := db.Query("SELECT id FROM houses WHERE is_deleted = 1 AND updated_at < ?", twoMonthsAgo)
+	if err != nil {
+		return 0, err
+	}
+	defer rows.Close()
+
+	var ids []int
+	for rows.Next() {
+		var id int
+		rows.Scan(&id)
+		ids = append(ids, id)
+	}
+
+	if len(ids) == 0 {
+		return 0, nil
+	}
+
+	// Delete from audit_log first (optional, or keep history)
+	// For this requirement, we'll keep audit log but remove the houses
+	result, err := db.Exec("DELETE FROM houses WHERE is_deleted = 1 AND updated_at < ?", twoMonthsAgo)
+	if err != nil {
+		return 0, err
+	}
+
+	count, _ := result.RowsAffected()
+	slog.Info("Permanently deleted old houses", "count", count, "ids", ids)
+	return count, nil
+}
+
 // UserExists checks if a username already exists.
 func UserExists(username string) bool {
 	var count int

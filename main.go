@@ -40,6 +40,19 @@ func main() {
 	http.HandleFunc("/login", controllers.LoginHandler)
 	http.HandleFunc("/logout", controllers.LogoutHandler)
 
+	// Start background cleanup worker
+	go func() {
+		ticker := time.NewTicker(24 * time.Hour)
+		for range ticker.C {
+			count, err := models.PermanentlyDeleteOldHouses()
+			if err != nil {
+				slog.Error("Background cleanup failed", "error", err)
+			} else if count > 0 {
+				slog.Info("Background cleanup successful", "deleted_count", count)
+			}
+		}
+	}()
+
 	// Start server
 	port := ":8080"
 	slog.Info("Starting server", "port", port)
