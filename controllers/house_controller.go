@@ -6,7 +6,9 @@ import (
 	"fmt"
 	"html/template"
 	"log/slog"
+	"math"
 	"net/http"
+	"regexp"
 	"strconv"
 	"time"
 
@@ -45,6 +47,30 @@ func getLoggedInUserID(r *http.Request) *int {
 func parseInt(s string) int {
 	i, _ := strconv.Atoi(s)
 	return i
+}
+
+// Helper to calculate password entropy in Go
+func calculateEntropy(password string) float64 {
+	if password == "" {
+		return 0
+	}
+	var pool float64
+	if regexp.MustCompile(`[a-z]`).MatchString(password) {
+		pool += 26
+	}
+	if regexp.MustCompile(`[A-Z]`).MatchString(password) {
+		pool += 26
+	}
+	if regexp.MustCompile(`[0-9]`).MatchString(password) {
+		pool += 10
+	}
+	if regexp.MustCompile(`[^a-zA-Z0-9]`).MatchString(password) {
+		pool += 33
+	}
+	if pool == 0 {
+		return 0
+	}
+	return float64(len(password)) * math.Log2(pool)
 }
 
 // HomeHandler serves the landing page.
@@ -223,12 +249,26 @@ func SignupHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
+	r.ParseForm()
 	username := r.FormValue("username")
 	password := r.FormValue("password")
+	confirm := r.FormValue("confirm_password")
+
 	if username == "" || password == "" {
 		http.Error(w, "Username and password required", http.StatusBadRequest)
 		return
 	}
+
+	if password != confirm {
+		http.Error(w, "Passwords do not match", http.StatusBadRequest)
+		return
+	}
+
+	if calculateEntropy(password) < 40 {
+		http.Error(w, "Password too weak (requires 40 bits of entropy)", http.StatusBadRequest)
+		return
+	}
+
 	err := models.CreateUser(username, password)
 	if err != nil {
 		slog.Error("Failed to create user", "error", err)
