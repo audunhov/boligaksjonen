@@ -355,9 +355,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
                 
                 const popupContent = `
-                    <div class="p-2 min-w-[150px]">
-                        <b class="text-sm text-gray-900 block mb-1">${h.address}</b>
-                        <button class="w-full mt-2 bg-blue-600 text-white text-[10px] font-black uppercase tracking-wider py-2 rounded-lg shadow-sm" onclick="window.showHouseDetailsById(${h.id})">
+                    <div class="p-4 min-w-[180px] max-w-[240px]">
+                        <h4 class="text-sm font-black text-gray-900 leading-tight mb-3">${h.address}</h4>
+                        <button class="w-full bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-black uppercase tracking-widest py-2.5 rounded-lg shadow-md shadow-blue-100 transition-all active:scale-95" onclick="window.showHouseDetailsById(${h.id})">
                             Vis detaljer
                         </button>
                     </div>

@@ -19,6 +19,11 @@
         .leaflet-container { font-family: inherit; }
         dialog::backdrop { background: rgba(0,0,0,0.5); backdrop-filter: blur(2px); }
         .lookup-item:hover { background: #f8fafc; }
+
+        /* Leaflet Popup Refinements */
+        .leaflet-popup-content-wrapper { border-radius: 1rem; padding: 0; overflow: hidden; }
+        .leaflet-popup-content { margin: 0; width: auto !important; }
+        .leaflet-popup-tip-container { display: none; }
         
         /* Floating Topbar Animation (Desktop Only) */
         @media (min-width: 768px) {
