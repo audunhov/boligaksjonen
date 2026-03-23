@@ -274,6 +274,11 @@ func SignupHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if len(username) < 4 {
+		http.Error(w, "Username must be at least 4 characters", http.StatusBadRequest)
+		return
+	}
+
 	if password != confirm {
 		http.Error(w, "Passwords do not match", http.StatusBadRequest)
 		return

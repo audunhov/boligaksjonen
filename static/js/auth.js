@@ -65,6 +65,17 @@
             return;
         }
 
+        if (username.length < 4) {
+            if (notice) {
+                notice.classList.remove('hidden');
+                notice.innerText = 'Brukernavn må være minst 4 tegn';
+                notice.className = 'text-[9px] font-black uppercase tracking-widest mt-1 text-red-500';
+            }
+            isUsernameAvailable = false;
+            window.validateSignupForm();
+            return;
+        }
+
         try {
             const res = await fetch(`/api/auth/check-username?username=${encodeURIComponent(username)}`);
             const data = await res.json();
