@@ -150,7 +150,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 data.adresser.forEach(addr => {
                     const item = document.createElement('div');
                     item.className = 'p-3 cursor-pointer border-b border-gray-50 hover:bg-blue-50 transition-colors text-xs last:border-none';
-                    item.innerHTML = `<span class="font-bold text-gray-800">${addr.adressetekst}</span> <span class="text-gray-500 ml-1">${addr.poststed}</span>`;
+                    item.innerHTML = `<span class="font-bold text-gray-900">${addr.adressetekst}</span> <span class="text-gray-500 ml-1">${addr.poststed}</span>`;
                     item.onclick = () => window.selectAddress(addr);
                     resultsDiv.appendChild(item);
                 });
@@ -163,8 +163,6 @@ document.addEventListener('DOMContentLoaded', () => {
             statusDiv.classList.add('text-red-500');
         }
     }
-
-    let searchMarker = null;
 
     window.selectAddress = function(addr) {
         document.getElementById('edit_address').value = addr.adressetekst;
@@ -190,19 +188,9 @@ document.addEventListener('DOMContentLoaded', () => {
         kvLink.href = url;
         kvLink.classList.remove('hidden');
 
-        // Move map and add temporary search marker
+        // Move map
         const latlng = [addr.representasjonspunkt.lat, addr.representasjonspunkt.lon];
         map.flyTo(latlng, 17);
-        
-        if (searchMarker) map.removeLayer(searchMarker);
-        searchMarker = L.marker(latlng, {
-            icon: L.divIcon({
-                className: 'custom-div-icon',
-                html: "<div class='size-4 bg-blue-600 border-2 border-white rounded-full shadow-lg animate-bounce'></div>",
-                iconSize: [16, 16],
-                iconAnchor: [8, 8]
-            })
-        }).addTo(map);
     }
 
     window.showHouseDetails = function(house) {
@@ -276,8 +264,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const { lat, lng } = e.latlng;
         
         try {
-            // Geonorge Reverse Geocoding (Punktsøk)
-            // radius=10 to find the closest address within 10 meters
             const response = await fetch(`https://ws.geonorge.no/adresser/v1/punktsok?lon=${lng}&lat=${lat}&radius=10&treffPerSide=1`);
             const data = await response.json();
 
@@ -285,8 +271,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 const addr = data.adresser[0];
                 window.openAddModal();
                 window.selectAddress(addr);
-            } else {
-                console.log("Ingen adresse funnet på dette punktet.");
             }
         } catch (error) {
             console.error('Reverse geocoding error:', error);
