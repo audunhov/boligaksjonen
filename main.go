@@ -23,6 +23,7 @@ func main() {
 
 	// Register routes
 	http.HandleFunc("/", controllers.HomeHandler)
+	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
 	http.HandleFunc("/kart", controllers.MapHandler)
 	http.HandleFunc("/kart/historikk", controllers.HistoryHandler)
 	http.HandleFunc("/api/houses", controllers.APIHousesHandler)
