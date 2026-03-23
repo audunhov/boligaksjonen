@@ -185,6 +185,16 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('detail_aside').classList.remove('is-open');
     }
 
+    window.showSignup = function() {
+        document.getElementById('loginDialog').close();
+        document.getElementById('signupDialog').showModal();
+    }
+
+    window.showLogin = function() {
+        document.getElementById('signupDialog').close();
+        document.getElementById('loginDialog').showModal();
+    }
+
     window.lookupCoordinatesHeader = async function(address) {
         const resultsDiv = document.getElementById('header_lookup_results');
         if (!address) {
