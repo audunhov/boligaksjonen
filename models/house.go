@@ -212,12 +212,33 @@ func UpdateHouse(updated House, userID *int, anonHash string) error {
 	return nil
 }
 
-// AddHouse adds a new house to the database and logs the action.
+// AddHouse adds a new house to the database or restores a deleted one at the same address.
 func AddHouse(newHouse House, userID *int, anonHash string) int {
 	if db == nil {
 		return 0
 	}
 
+	// Check if a house already exists at this address (even if deleted)
+	var existingID int
+	var isDeleted int
+	err := db.QueryRow("SELECT id, is_deleted FROM houses WHERE address = ?", newHouse.Address).Scan(&existingID, &isDeleted)
+	
+	if err == nil {
+		// House exists. If it's deleted, we restore and update it.
+		// If it's NOT deleted, the caller should have handled it, but we'll update it anyway to be safe.
+		newHouse.ID = existingID
+		newHouse.IsDeleted = false
+		UpdateHouse(newHouse, userID, anonHash)
+		
+		// If it was previously deleted, add a specific log for restoration
+		if isDeleted == 1 {
+			logQuery := `INSERT INTO audit_log (house_id, action, new_data, user_id, anon_hash, timestamp) VALUES (?, ?, ?, ?, ?, ?)`
+			db.Exec(logQuery, existingID, "restore", "Gjenrapportert via nytt skjema", userID, anonHash, time.Now())
+		}
+		return existingID
+	}
+
+	// House doesn't exist, proceed with normal insertion
 	if newHouse.UpdatedAt.IsZero() {
 		newHouse.UpdatedAt = time.Now()
 	}
