@@ -271,7 +271,29 @@ document.addEventListener('DOMContentLoaded', () => {
             });
     }
 
-    // 3. Fetch data
+    // 3. Map Click Handler (Reverse Geocoding)
+    map.on('click', async (e) => {
+        const { lat, lng } = e.latlng;
+        
+        try {
+            // Geonorge Reverse Geocoding (Punktsøk)
+            // radius=10 to find the closest address within 10 meters
+            const response = await fetch(`https://ws.geonorge.no/adresser/v1/punktsok?lon=${lng}&lat=${lat}&radius=10&treffPerSide=1`);
+            const data = await response.json();
+
+            if (data.adresser && data.adresser.length > 0) {
+                const addr = data.adresser[0];
+                window.openAddModal();
+                window.selectAddress(addr);
+            } else {
+                console.log("Ingen adresse funnet på dette punktet.");
+            }
+        } catch (error) {
+            console.error('Reverse geocoding error:', error);
+        }
+    });
+
+    // 4. Fetch data
     fetch('/api/houses')
         .then(res => res.json())
         .then(houses => {
