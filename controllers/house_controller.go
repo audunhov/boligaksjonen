@@ -277,6 +277,33 @@ func LogoutHandler(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, r.Referer(), http.StatusSeeOther)
 }
 
+// AddCommentHandler handles POST requests to add a comment to a house.
+func AddCommentHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	r.ParseForm()
+	houseID, _ := strconv.Atoi(r.FormValue("house_id"))
+	content := r.FormValue("comment")
+	if houseID == 0 || content == "" {
+		http.Error(w, "House ID and comment required", http.StatusBadRequest)
+		return
+	}
+
+	userID := getLoggedInUserID(r)
+	anonHash := getFingerprint(r)
+
+	err := models.AddComment(houseID, content, userID, anonHash)
+	if err != nil {
+		slog.Error("Failed to add comment", "error", err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusCreated)
+}
+
 // APIHouseHistoryHandler returns the audit log for a specific house as JSON.
 func APIHouseHistoryHandler(w http.ResponseWriter, r *http.Request) {
 	id, _ := strconv.Atoi(r.URL.Query().Get("id"))

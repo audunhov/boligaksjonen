@@ -167,11 +167,32 @@
                             </form>
                         </div>
 
-                        <!-- Mini History in Sidebar -->
+                        <!-- Advanced History & Comments -->
                         <div class="mt-12 border-t border-gray-200 pt-8">
-                            <h3 class="text-sm font-black text-gray-900 uppercase tracking-widest mb-6">Historikk</h3>
-                            <div id="aside_history_list" class="space-y-6">
-                                <!-- History items will be injected here -->
+                            <h3 class="text-sm font-black text-gray-900 uppercase tracking-widest mb-6">Aktivitetsstrøm</h3>
+                            
+                            <ul id="aside_history_list" role="list" class="space-y-6">
+                                <!-- Timeline items injected here -->
+                            </ul>
+
+                            <!-- New comment form -->
+                            <div id="comment_section" class="mt-10 pt-10 border-t border-gray-100 hidden">
+                                <div class="flex gap-x-3">
+                                    <div class="size-6 flex-none rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-[10px] uppercase">
+                                        {{if .Username}}{{slice .Username 0 1}}{{else}}A{{end}}
+                                    </div>
+                                    <form id="commentForm" class="relative flex-auto" onsubmit="window.submitComment(event)">
+                                        <input type="hidden" name="house_id" id="comment_house_id">
+                                        <div class="overflow-hidden rounded-lg pb-12 outline outline-1 -outline-offset-1 outline-gray-300 focus-within:outline focus-within:outline-2 focus-within:-outline-offset-2 focus-within:outline-blue-600 bg-white">
+                                            <label for="comment" class="sr-only">Add your comment</label>
+                                            <textarea id="comment_text" name="comment" rows="2" placeholder="Skriv en kommentar..." class="block w-full resize-none bg-transparent px-3 py-1.5 text-sm text-gray-900 placeholder:text-gray-400 focus:outline focus:outline-0"></textarea>
+                                        </div>
+
+                                        <div class="absolute inset-x-0 bottom-0 flex justify-end py-2 px-2">
+                                            <button type="submit" class="rounded-md bg-blue-600 px-3 py-1.5 text-xs font-bold text-white shadow-sm hover:bg-blue-700 transition-all">Kommenter</button>
+                                        </div>
+                                    </form>
+                                </div>
                             </div>
                         </div>
                     </div>

@@ -27,13 +27,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const markers = L.markerClusterGroup();
     let allHouses = [];
 
-    // Helper to build Kartverket URL
-    function getKartverketUrl(h) {
-        if (!h.knr || !h.gnr || !h.bnr) return null;
-        // Format: knr/gnr/bnr/fnr/snr
-        return `https://eiendomsregisteret.kartverket.no/eiendom/${h.knr}/${h.gnr}/${h.bnr}/${h.fnr || 0}/${h.snr || 0}`;
-    }
-
     // Helper for debouncing
     function debounce(func, timeout = 300) {
         let timer;
@@ -48,6 +41,28 @@ document.addEventListener('DOMContentLoaded', () => {
     
     window.debouncedHeaderLookup = debouncedHeaderLookup;
     window.debouncedModalLookup = debouncedModalLookup;
+
+    // Helper to build Kartverket URL
+    function getKartverketUrl(h) {
+        if (!h.knr || !h.gnr || !h.bnr) return null;
+        return `https://eiendomsregisteret.kartverket.no/eiendom/${h.knr}/${h.gnr}/${h.bnr}/${h.fnr || 0}/${h.snr || 0}`;
+    }
+
+    // Helper for Time Ago
+    function timeAgo(date) {
+        const seconds = Math.floor((new Date() - new Date(date)) / 1000);
+        let interval = seconds / 31536000;
+        if (interval > 1) return Math.floor(interval) + " år siden";
+        interval = seconds / 2592000;
+        if (interval > 1) return Math.floor(interval) + " mnd siden";
+        interval = seconds / 86400;
+        if (interval > 1) return Math.floor(interval) + " dager siden";
+        interval = seconds / 3600;
+        if (interval > 1) return Math.floor(interval) + " timer siden";
+        interval = seconds / 60;
+        if (interval > 1) return Math.floor(interval) + " min siden";
+        return "akkurat nå";
+    }
 
     // 2. Define global UI helpers
     window.openAddModal = function() {
@@ -70,14 +85,12 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('edit_lng').value = house.lng;
         document.getElementById('edit_description').value = house.description;
         
-        // Populate hidden matrikkel fields
         document.getElementById('edit_knr').value = house.knr || '';
         document.getElementById('edit_gnr').value = house.gnr || 0;
         document.getElementById('edit_bnr').value = house.bnr || 0;
         document.getElementById('edit_fnr').value = house.fnr || 0;
         document.getElementById('edit_snr').value = house.snr || 0;
 
-        // Setup Kartverket link
         const kvLink = document.getElementById('kartverket_link');
         const url = getKartverketUrl(house);
         if (url) {
@@ -123,31 +136,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 resultsDiv.classList.remove('hidden');
                 resultsDiv.innerHTML = '';
                 data.adresser.forEach(addr => {
-                    // Check if this address already exists in our database
                     const existingHouse = allHouses.find(h => h.address === addr.adressetekst);
-                    
                     const item = document.createElement('div');
                     item.className = 'p-4 cursor-pointer border-b border-gray-50 hover:bg-blue-50 transition-colors text-sm last:border-none flex justify-between items-center';
-                    
                     let actionText = existingHouse ? 'Vis' : 'Rapporter';
                     let actionColor = existingHouse ? 'text-green-600' : 'text-blue-600';
-
-                    item.innerHTML = `
-                        <div>
-                            <span class="font-bold text-gray-900">${addr.adressetekst}</span>
-                            <span class="text-gray-400 ml-2">${addr.poststed}</span>
-                        </div>
-                        <span class="text-[10px] font-black ${actionColor} uppercase tracking-widest">${actionText}</span>
-                    `;
-
+                    item.innerHTML = `<div><span class="font-bold text-gray-900">${addr.adressetekst}</span><span class="text-gray-400 ml-2">${addr.poststed}</span></div><span class="text-[10px] font-black ${actionColor} uppercase tracking-widest">${actionText}</span>`;
                     item.onclick = () => {
                         resultsDiv.classList.add('hidden');
                         if (existingHouse) {
-                            // Just show existing house
                             map.flyTo([existingHouse.lat, existingHouse.lng], 17);
                             window.showHouseDetails(existingHouse);
                         } else {
-                            // Open report modal for new house
                             window.openAddModal();
                             window.selectAddress(addr);
                         }
@@ -164,29 +164,25 @@ document.addEventListener('DOMContentLoaded', () => {
         const address = document.getElementById('edit_address').value;
         const statusDiv = document.getElementById('lookup_status');
         const resultsDiv = document.getElementById('lookup_results');
-        
         if (!address) {
             statusDiv.innerText = 'Vennligst skriv inn en adresse.';
             statusDiv.classList.add('text-red-500');
             return;
         }
-
         statusDiv.innerText = 'Slår opp...';
         statusDiv.classList.remove('text-red-500', 'text-green-500');
         resultsDiv.classList.add('hidden');
         resultsDiv.innerHTML = '';
-
         try {
             const response = await fetch(`https://ws.geonorge.no/adresser/v1/sok?sok=${encodeURIComponent(address)}&treffPerSide=10`);
             const data = await response.json();
-
             if (data.adresser && data.adresser.length > 0) {
                 statusDiv.innerText = `Fant ${data.adresser.length} resultater:`;
                 resultsDiv.classList.remove('hidden');
                 data.adresser.forEach(addr => {
                     const item = document.createElement('div');
                     item.className = 'p-3 cursor-pointer border-b border-gray-50 hover:bg-blue-50 transition-colors text-xs last:border-none';
-                    item.innerHTML = `<span class="font-bold text-gray-900">${addr.adressetekst}</span> <span class="text-gray-500 ml-1">${addr.poststed}</span>`;
+                    item.innerHTML = `<span class="font-bold text-gray-800">${addr.adressetekst}</span> <span class="text-gray-500 ml-1">${addr.poststed}</span>`;
                     item.onclick = () => window.selectAddress(addr);
                     resultsDiv.appendChild(item);
                 });
@@ -204,43 +200,35 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('edit_address').value = addr.adressetekst;
         document.getElementById('edit_lat').value = addr.representasjonspunkt.lat;
         document.getElementById('edit_lng').value = addr.representasjonspunkt.lon;
-        
-        // Populate hidden matrikkel fields
         document.getElementById('edit_knr').value = addr.kommunenummer;
         document.getElementById('edit_gnr').value = addr.gardsnummer;
         document.getElementById('edit_bnr').value = addr.bruksnummer;
         document.getElementById('edit_fnr').value = addr.festenummer || 0;
         document.getElementById('edit_snr').value = addr.seksjonsnummer || 0;
-
         const statusDiv = document.getElementById('lookup_status');
         const resultsDiv = document.getElementById('lookup_results');
         statusDiv.innerText = `Valgt: ${addr.adressetekst}`;
         statusDiv.classList.add('text-green-500');
         resultsDiv.classList.add('hidden');
-
-        // Show direct Kartverket link
         const kvLink = document.getElementById('kartverket_link');
         const url = `https://eiendomsregisteret.kartverket.no/eiendom/${addr.kommunenummer}/${addr.gardsnummer}/${addr.bruksnummer}/${addr.festenummer || 0}/${addr.seksjonsnummer || 0}`;
         kvLink.href = url;
         kvLink.classList.remove('hidden');
-
-        // Move map
-        const latlng = [addr.representasjonspunkt.lat, addr.representasjonspunkt.lon];
-        map.flyTo(latlng, 17);
+        map.flyTo([addr.representasjonspunkt.lat, addr.representasjonspunkt.lon], 17);
     }
 
     window.showHouseDetails = function(house) {
         const placeholder = document.getElementById('aside_placeholder');
         const content = document.getElementById('aside_content');
-        
         if (placeholder) placeholder.classList.add('hidden');
         if (content) content.classList.remove('hidden');
-        
         document.getElementById('aside_address').innerText = house.address;
         document.getElementById('aside_description').innerHTML = house.description.replace(/\r\n/g, '<br>').replace(/\n/g, '<br>');
         document.getElementById('aside_author').innerText = house.last_updated_by;
         document.getElementById('aside_date').innerText = new Date(house.updated_at).toLocaleString('no-NO');
         document.getElementById('remove_house_id').value = house.id;
+        document.getElementById('comment_house_id').value = house.id;
+        document.getElementById('comment_section').classList.remove('hidden');
         
         const badge = document.getElementById('aside_badge');
         const type = (house.ownership_type || 'annet').toLowerCase().trim();
@@ -255,20 +243,19 @@ document.addEventListener('DOMContentLoaded', () => {
         };
         badge.innerHTML = `<span class="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest ${colors[type] || 'bg-gray-100 text-gray-500'}">${type.replace('-', ' ')}</span>`;
         document.getElementById('aside_edit_btn').onclick = () => window.openEditModal(house.id);
-
-        // Add Kartverket link to sidebar if we have the data
         const kvUrl = getKartverketUrl(house);
-        const asideHeader = document.getElementById('aside_badge');
         if (kvUrl) {
-            const linkHtml = `<a href="${kvUrl}" target="_blank" class="ml-2 text-[10px] font-bold text-blue-600 hover:underline">Se i matrikkelen →</a>`;
-            asideHeader.innerHTML += linkHtml;
+            badge.innerHTML += `<a href="${kvUrl}" target="_blank" class="ml-2 text-[10px] font-bold text-blue-600 hover:underline">Se i matrikkelen →</a>`;
         }
 
-        // Fetch and show history
+        window.refreshHistory(house.id);
+    }
+
+    window.refreshHistory = function(houseID) {
         const historyList = document.getElementById('aside_history_list');
         historyList.innerHTML = '<div class="text-xs text-gray-400">Laster historikk...</div>';
         
-        fetch(`/api/houses/history?id=${house.id}`)
+        fetch(`/api/houses/history?id=${houseID}`)
             .then(res => res.json())
             .then(logs => {
                 if (logs.length === 0) {
@@ -277,33 +264,77 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 historyList.innerHTML = '';
                 logs.forEach(log => {
-                    const item = document.createElement('div');
-                    item.className = 'relative pl-6 pb-6 border-l border-gray-100 last:border-0';
-                    item.innerHTML = `
-                        <div class="absolute -left-[5px] top-1.5 size-2.5 rounded-full border-2 border-white ${log.action === 'add' ? 'bg-green-500' : 'bg-blue-500'}"></div>
-                        <div class="flex justify-between items-start mb-1">
-                            <span class="text-[10px] font-black uppercase tracking-widest ${log.action === 'add' ? 'text-green-600' : 'text-blue-600'}">${log.action === 'add' ? 'Opprettet' : 'Endret'}</span>
-                            <span class="text-[10px] font-bold text-gray-400">${new Date(log.timestamp).toLocaleDateString('no-NO')}</span>
-                        </div>
-                        <p class="text-xs font-bold text-gray-900 mb-1">${log.username || 'Anonym (' + log.anon_hash + ')'}</p>
-                    `;
-                    historyList.appendChild(item);
+                    const li = document.createElement('li');
+                    li.className = 'relative flex gap-x-4';
+                    
+                    const timeStr = timeAgo(log.timestamp);
+                    const author = log.username || 'Anonym (' + log.anon_hash + ')';
+                    const initial = author.charAt(0).toUpperCase();
+
+                    if (log.action === 'comment') {
+                        // Card style for comments
+                        li.innerHTML = `
+                            <div class="absolute -bottom-6 left-0 top-0 flex w-6 justify-center"><div class="w-px bg-gray-200"></div></div>
+                            <div class="relative mt-3 size-6 flex-none rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-[10px] uppercase outline outline-1 -outline-offset-1 outline-black/5">${initial}</div>
+                            <div class="flex-auto rounded-md p-3 ring-1 ring-inset ring-gray-200 bg-white shadow-sm">
+                                <div class="flex justify-between gap-x-4">
+                                    <div class="py-0.5 text-xs/5 text-gray-500"><span class="font-medium text-gray-900">${author}</span> kommenterte</div>
+                                    <time class="flex-none py-0.5 text-[10px] text-gray-400">${timeStr}</time>
+                                </div>
+                                <p class="text-sm/6 text-gray-600">${log.new_data}</p>
+                            </div>
+                        `;
+                    } else {
+                        // Simple style for system actions
+                        let actionMsg = "";
+                        switch(log.action) {
+                            case 'add': actionMsg = "rapporterte boligen"; break;
+                            case 'update': actionMsg = "oppdaterte oppføringen"; break;
+                            case 'remove': actionMsg = "fjernet oppføringen"; break;
+                            case 'restore': actionMsg = "gjenopprettet oppføringen"; break;
+                        }
+                        li.innerHTML = `
+                            <div class="absolute -bottom-6 left-0 top-0 flex w-6 justify-center"><div class="w-px bg-gray-200"></div></div>
+                            <div class="relative flex size-6 flex-none items-center justify-center bg-gray-50">
+                                <div class="size-1.5 rounded-full bg-gray-100 ring ring-gray-300"></div>
+                            </div>
+                            <p class="flex-auto py-0.5 text-xs/5 text-gray-500"><span class="font-medium text-gray-900">${author}</span> ${actionMsg}.</p>
+                            <time class="flex-none py-0.5 text-[10px] text-gray-400">${timeStr}</time>
+                        `;
+                    }
+                    historyList.appendChild(li);
                 });
-            })
-            .catch(err => {
-                console.error('Failed to fetch history:', err);
-                historyList.innerHTML = '<div class="text-xs text-red-500">Klarte ikke å hente historikk.</div>';
             });
+    }
+
+    window.submitComment = function(e) {
+        e.preventDefault();
+        const form = document.getElementById('commentForm');
+        const houseID = document.getElementById('comment_house_id').value;
+        const comment = document.getElementById('comment_text').value;
+        if (!comment) return;
+
+        const formData = new FormData();
+        formData.append('house_id', houseID);
+        formData.append('comment', comment);
+
+        fetch('/api/houses/comment', {
+            method: 'POST',
+            body: formData
+        }).then(res => {
+            if (res.ok) {
+                document.getElementById('comment_text').value = '';
+                window.refreshHistory(houseID);
+            }
+        });
     }
 
     // 3. Map Click Handler (Reverse Geocoding)
     map.on('dblclick', async (e) => {
         const { lat, lng } = e.latlng;
-        
         try {
             const response = await fetch(`https://ws.geonorge.no/adresser/v1/punktsok?lon=${lng}&lat=${lat}&radius=10&treffPerSide=1`);
             const data = await response.json();
-
             if (data.adresser && data.adresser.length > 0) {
                 const addr = data.adresser[0];
                 window.openAddModal();

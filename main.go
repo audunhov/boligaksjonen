@@ -30,6 +30,7 @@ func main() {
 	http.HandleFunc("/kart/historikk", controllers.HistoryHandler)
 	http.HandleFunc("/api/houses", controllers.APIHousesHandler)
 	http.HandleFunc("/api/houses/history", controllers.APIHouseHistoryHandler)
+	http.HandleFunc("/api/houses/comment", controllers.AddCommentHandler)
 	http.HandleFunc("/houses/edit", controllers.EditHandler)
 	http.HandleFunc("/houses/update", controllers.UpdateHandler)
 	http.HandleFunc("/houses/remove", controllers.RemoveHandler)

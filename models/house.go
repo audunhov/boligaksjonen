@@ -313,6 +313,20 @@ func RestoreHouse(id int, userID *int, anonHash string) error {
 	return err
 }
 
+// AddComment adds a comment to a house's history.
+func AddComment(houseID int, content string, userID *int, anonHash string) error {
+	if db == nil {
+		return errors.New("database not initialized")
+	}
+
+	logQuery := `
+		INSERT INTO audit_log (house_id, action, new_data, user_id, anon_hash, timestamp)
+		VALUES (?, ?, ?, ?, ?, ?)
+	`
+	_, err := db.Exec(logQuery, houseID, "comment", content, userID, anonHash, time.Now())
+	return err
+}
+
 // GetAuditLogs returns all audit logs from the database.
 func GetAuditLogs() []AuditLog {
 	logs := []AuditLog{}
