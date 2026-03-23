@@ -1,9 +1,23 @@
-// Initialize the map centered on Oslo
+// Initialize the map
 document.addEventListener('DOMContentLoaded', () => {
+    // Load saved position or default to Oslo
+    const savedPos = JSON.parse(localStorage.getItem('map_position') || '{"lat": 59.9139, "lng": 10.7522, "zoom": 13}');
+
     // 1. Initialize Leaflet (disable default zoom control)
     const map = L.map('map', {
         zoomControl: false
-    }).setView([59.9139, 10.7522], 13);
+    }).setView([savedPos.lat, savedPos.lng], savedPos.zoom);
+
+    // Save position on move or zoom
+    map.on('moveend', () => {
+        const center = map.getCenter();
+        const state = {
+            lat: center.lat,
+            lng: center.lng,
+            zoom: map.getZoom()
+        };
+        localStorage.setItem('map_position', JSON.stringify(state));
+    });
     
     // Add custom zoom control at bottomleft
     L.control.zoom({
