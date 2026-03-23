@@ -12,7 +12,41 @@
     <style>
         body { margin: 0; padding: 0; font-family: sans-serif; }
         #map { height: 100vh; width: 100vw; }
-        .header { position: absolute; top: 10px; left: 50px; z-index: 1000; background: white; padding: 10px 20px; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.3); }
+        
+        /* Toolbar Styles */
+        .toolbar { 
+            position: absolute; 
+            top: 20px; 
+            left: 50%; 
+            transform: translateX(-50%); 
+            z-index: 1000; 
+            background: white; 
+            padding: 8px 15px; 
+            border-radius: 50px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2); 
+            display: flex; 
+            align-items: center; 
+            gap: 12px;
+            white-space: nowrap;
+        }
+        .toolbar h1 { margin: 0; font-size: 1.1em; color: #2c3e50; border-right: 1px solid #ddd; padding-right: 12px; }
+        .toolbar-btn { 
+            background: none; 
+            border: none; 
+            color: #34495e; 
+            font-size: 0.9em; 
+            font-weight: 500; 
+            cursor: pointer; 
+            padding: 5px 10px; 
+            border-radius: 20px; 
+            text-decoration: none;
+            transition: background 0.2s;
+        }
+        .toolbar-btn:hover { background: #f0f2f5; color: #3498db; }
+        .toolbar-btn.primary { background: #3498db; color: white; }
+        .toolbar-btn.primary:hover { background: #2980b9; color: white; }
+        .toolbar-user { font-size: 0.85em; color: #7f8c8d; border-left: 1px solid #ddd; padding-left: 12px; margin-left: 5px; }
+
         .badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 0.8em; margin-top: 5px; margin-bottom: 5px; text-transform: capitalize; background-color: #eee; color: #333; }
         .badge-kommune { background-color: #3498db; color: white; }
         .badge-fylke { background-color: #2980b9; color: white; }
@@ -44,21 +78,20 @@
     </style>
 </head>
 <body>
-    <div class="header">
+    <div class="toolbar">
         <h1>Tom Bolig</h1>
-        <p>Vi synes ingen boliger burde stå tomme!</p>
-        <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px;">
-            <button class="btn btn-primary" onclick="openAddModal()">Report Empty House</button>
-            <a href="/kart/historikk" class="btn btn-secondary" style="text-decoration: none; padding: 10px 15px; display: inline-block;">Historikk</a>
-            <a href="/" class="btn btn-secondary" style="text-decoration: none; padding: 10px 15px; display: inline-block;">Back to Home</a>
-            {{if .UserID}}
-                <span style="align-self: center; margin-left: 10px;">Logged in as <strong>{{.Username}}</strong></span>
-                <a href="/logout" class="btn btn-secondary" style="text-decoration: none; padding: 10px 15px; display: inline-block;">Logout</a>
-            {{else}}
-                <button class="btn btn-secondary" onclick="document.getElementById('loginDialog').showModal()">Login</button>
-                <button class="btn btn-secondary" onclick="document.getElementById('signupDialog').showModal()">Signup</button>
-            {{end}}
-        </div>
+        <button class="toolbar-btn primary" onclick="openAddModal()">Report</button>
+        <a href="/kart/historikk" class="toolbar-btn">History</a>
+        <a href="/" class="toolbar-btn">Home</a>
+        {{if .UserID}}
+            <div class="toolbar-user">
+                <strong>{{.Username}}</strong>
+                <a href="/logout" class="toolbar-btn" style="color:#e74c3c;">Logout</a>
+            </div>
+        {{else}}
+            <button class="toolbar-btn" onclick="document.getElementById('loginDialog').showModal()">Login</button>
+            <button class="toolbar-btn" onclick="document.getElementById('signupDialog').showModal()">Signup</button>
+        {{end}}
     </div>
     
     <div id="map"></div>
