@@ -70,59 +70,59 @@
     </style>
 </head>
 <body class="h-full overflow-hidden">
-    <!-- Floating Header Container -->
-    <div class="fixed top-4 left-0 right-0 z-[1000] px-2 sm:px-4 pointer-events-none">
-        <header id="floating-header" class="mx-auto max-w-5xl bg-white/95 backdrop-blur-md border border-gray-200 rounded-2xl shadow-lg flex h-14 sm:h-16 shrink-0 items-center gap-x-2 sm:gap-x-4 px-2 sm:px-6 pointer-events-auto overflow-hidden">
-            <!-- Icon Link -->
-            <a href="/" class="flex h-9 w-9 sm:h-10 sm:w-10 shrink-0 items-center justify-center bg-blue-600 rounded-xl text-white font-black text-xs italic shadow-md shadow-blue-200 hover:bg-blue-700 transition-all active:scale-95">
-                TB
-            </a>
-
-            <div class="flex flex-1 gap-x-2 sm:gap-x-4 self-stretch items-center min-w-0">
-                <!-- Search (Compacts on mobile) -->
-                <div class="flex-1 relative min-w-0">
-                    <svg class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 size-4 text-gray-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 3.5a5.5 5.5 0 1 0 0 11 5.5 5.5 0 0 0 0-11ZM2 9a7 7 0 1 1 12.452 4.391l3.328 3.329a.75.75 0 1 1-1.06 1.06l-3.329-3.328A7 7 0 0 1 2 9Z" clip-rule="evenodd"/></svg>
-                    <input type="search" placeholder="Søk..." class="block w-full rounded-xl border-0 py-1.5 pl-9 pr-3 text-gray-900 ring-1 ring-inset ring-gray-200 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 text-xs sm:text-sm bg-gray-50/50" oninput="if(this.value === '') { document.getElementById('header_lookup_results').classList.add('hidden'); } else { debouncedHeaderLookup(this.value); }">
-                    <div id="header_lookup_results" class="absolute top-full mt-2 left-0 w-[280px] sm:w-full bg-white rounded-xl shadow-2xl border border-gray-100 hidden z-[1001] max-h-[60vh] overflow-y-auto overflow-x-hidden"></div>
-                </div>
-
-                <!-- Action Buttons -->
-                <div class="flex items-center gap-x-1 sm:gap-x-2 shrink-0">
-                    <a href="/kart/historikk" class="p-2 text-gray-500 hover:text-blue-600 rounded-lg hover:bg-blue-50 transition-all" title="Historikk">
-                        <svg class="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/></svg>
-                    </a>
-
-                    <button type="button" class="hidden sm:block px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-black uppercase tracking-wider rounded-xl shadow-lg shadow-blue-100 transition-all whitespace-nowrap" onclick="openAddModal()">
-                        Rapporter
-                    </button>
-
-                    <div class="h-6 w-px bg-gray-200 mx-1"></div>
-
-                    <!-- User Dropdown -->
-                    {{if .Username}}
-                        <el-dropdown class="relative">
-                            <button class="flex items-center p-1 rounded-full hover:bg-gray-50 transition-all">
-                                <div class="w-8 h-8 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-xs uppercase">{{slice .Username 0 1}}</div>
-                            </button>
-                            <el-menu anchor="bottom end" popover class="w-48 mt-2 origin-top-right rounded-xl bg-white p-1 shadow-2xl ring-1 ring-black/5 focus:outline-none transition-all">
-                                <a href="/logout" class="block px-3 py-2 text-sm font-medium text-red-600 rounded-lg hover:bg-red-50">Logg ut</a>
-                            </el-menu>
-                        </el-dropdown>
-                    {{else}}
-                        <button class="bg-gray-900 text-white p-2 sm:px-4 sm:py-2 rounded-xl hover:bg-gray-800 transition-all" onclick="document.getElementById('loginDialog').showModal()">
-                            <svg class="size-5 sm:hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"/></svg>
-                            <span class="hidden sm:inline text-xs font-black uppercase tracking-tighter">Bli med</span>
-                        </button>
-                    {{end}}
-                </div>
-            </div>
-        </header>
-    </div>
-
     <!-- Main Map View (Full Screen) -->
     <div class="flex h-full overflow-hidden relative">
         <main class="flex-1 relative">
             <div id="map"></div>
+
+            <!-- Floating Header (Now Absolute to Map Container) -->
+            <div class="absolute top-4 left-0 right-0 z-[1000] px-2 sm:px-4 pointer-events-none">
+                <header id="floating-header" class="mx-auto max-w-5xl bg-white/95 backdrop-blur-md border border-gray-200 rounded-2xl shadow-lg flex h-14 sm:h-16 shrink-0 items-center gap-x-2 sm:gap-x-4 px-2 sm:px-6 pointer-events-auto overflow-hidden">
+                    <!-- Icon Link -->
+                    <a href="/" class="flex h-9 w-9 sm:h-10 sm:w-10 shrink-0 items-center justify-center bg-blue-600 rounded-xl text-white font-black text-xs italic shadow-md shadow-blue-200 hover:bg-blue-700 transition-all active:scale-95">
+                        TB
+                    </a>
+
+                    <div class="flex flex-1 gap-x-2 sm:gap-x-4 self-stretch items-center min-w-0">
+                        <!-- Search (Compacts on mobile) -->
+                        <div class="flex-1 relative min-w-0">
+                            <svg class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 size-4 text-gray-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 3.5a5.5 5.5 0 1 0 0 11 5.5 5.5 0 0 0 0-11ZM2 9a7 7 0 1 1 12.452 4.391l3.328 3.329a.75.75 0 1 1-1.06 1.06l-3.329-3.328A7 7 0 0 1 2 9Z" clip-rule="evenodd"/></svg>
+                            <input type="search" placeholder="Søk..." class="block w-full rounded-xl border-0 py-1.5 pl-9 pr-3 text-gray-900 ring-1 ring-inset ring-gray-200 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 text-xs sm:text-sm bg-gray-50/50" oninput="if(this.value === '') { document.getElementById('header_lookup_results').classList.add('hidden'); } else { debouncedHeaderLookup(this.value); }">
+                            <div id="header_lookup_results" class="absolute top-full mt-2 left-0 w-[280px] sm:w-full bg-white rounded-xl shadow-2xl border border-gray-100 hidden z-[1001] max-h-[60vh] overflow-y-auto overflow-x-hidden"></div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="flex items-center gap-x-1 sm:gap-x-2 shrink-0">
+                            <a href="/kart/historikk" class="p-2 text-gray-500 hover:text-blue-600 rounded-lg hover:bg-blue-50 transition-all" title="Historikk">
+                                <svg class="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/></svg>
+                            </a>
+
+                            <button type="button" class="hidden sm:block px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-black uppercase tracking-wider rounded-xl shadow-lg shadow-blue-100 transition-all whitespace-nowrap" onclick="openAddModal()">
+                                Rapporter
+                            </button>
+
+                            <div class="h-6 w-px bg-gray-200 mx-1"></div>
+
+                            <!-- User Dropdown -->
+                            {{if .Username}}
+                                <el-dropdown class="relative">
+                                    <button class="flex items-center p-1 rounded-full hover:bg-gray-50 transition-all">
+                                        <div class="w-8 h-8 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-xs uppercase">{{slice .Username 0 1}}</div>
+                                    </button>
+                                    <el-menu anchor="bottom end" popover class="w-48 mt-2 origin-top-right rounded-xl bg-white p-1 shadow-2xl ring-1 ring-black/5 focus:outline-none transition-all">
+                                        <a href="/logout" class="block px-3 py-2 text-sm font-medium text-red-600 rounded-lg hover:bg-red-50">Logg ut</a>
+                                    </el-menu>
+                                </el-dropdown>
+                            {{else}}
+                                <button class="bg-gray-900 text-white p-2 sm:px-4 sm:py-2 rounded-xl hover:bg-gray-800 transition-all" onclick="document.getElementById('loginDialog').showModal()">
+                                    <svg class="size-5 sm:hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"/></svg>
+                                    <span class="hidden sm:inline text-xs font-black uppercase tracking-tighter">Bli med</span>
+                                </button>
+                            {{end}}
+                        </div>
+                    </div>
+                </header>
+            </div>
         </main>
 
         <!-- Detail Sidebar / Bottom Sheet -->
