@@ -275,7 +275,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // 3. Map Click Handler (Reverse Geocoding)
-    map.on('click', async (e) => {
+    map.on('dblclick', async (e) => {
         const { lat, lng } = e.latlng;
         
         try {
