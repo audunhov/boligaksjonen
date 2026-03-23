@@ -424,8 +424,19 @@ func GetAuditLogsForHouse(houseID int) []AuditLog {
 	return logs
 }
 
+// UserExists checks if a username already exists.
+func UserExists(username string) bool {
+	var count int
+	query := `SELECT COUNT(*) FROM users WHERE username = ?`
+	err := db.QueryRow(query, username).Scan(&count)
+	return err == nil && count > 0
+}
+
 // CreateUser registers a new user with a hashed password.
 func CreateUser(username, password string) error {
+	if UserExists(username) {
+		return errors.New("username already exists")
+	}
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
 		return err

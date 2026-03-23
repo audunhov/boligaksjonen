@@ -141,6 +141,17 @@ func APIHousesHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(houses)
 }
 
+// CheckUsernameHandler checks if a username is available.
+func CheckUsernameHandler(w http.ResponseWriter, r *http.Request) {
+	username := r.URL.Query().Get("username")
+	if username == "" {
+		http.Error(w, "Username required", http.StatusBadRequest)
+		return
+	}
+	exists := models.UserExists(username)
+	json.NewEncoder(w).Encode(map[string]bool{"exists": exists})
+}
+
 // UpdateHandler handles the POST request to update or add a house.
 func UpdateHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {

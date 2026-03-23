@@ -288,7 +288,11 @@
                 <button class="text-gray-300 hover:text-gray-900 text-2xl" onclick="document.getElementById('signupDialog').close()">&times;</button>
             </div>
             <form id="signupForm" action="/signup" method="POST" class="space-y-4 sm:space-y-6" onsubmit="return window.validateSignup(event)">
-                <div><label class="{{$label}}">Brukernavn</label><input type="text" name="username" required class="{{$input}}"></div>
+                <div>
+                    <label class="{{$label}}">Brukernavn</label>
+                    <input type="text" id="signup_username" name="username" required class="{{$input}}" oninput="debouncedUsernameCheck(this.value)">
+                    <p id="username_notice" class="text-[9px] font-black uppercase tracking-widest mt-1 hidden"></p>
+                </div>
                 <div>
                     <label class="{{$label}}">Passord</label>
                     <input type="password" id="signup_password" name="password" required class="{{$input}}" oninput="window.checkPasswordStrength(this.value)">

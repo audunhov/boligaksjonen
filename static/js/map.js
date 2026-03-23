@@ -57,10 +57,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const debouncedHeaderLookup = debounce((val) => window.lookupCoordinatesHeader(val));
     const debouncedModalLookup = debounce(() => window.lookupCoordinates());
+    const debouncedUsernameCheck = debounce((val) => window.checkUsername(val));
+
     window.debouncedHeaderLookup = debouncedHeaderLookup;
     window.debouncedModalLookup = debouncedModalLookup;
+    window.debouncedUsernameCheck = debouncedUsernameCheck;
 
     function timeAgo(date) {
+
         const seconds = Math.floor((new Date() - new Date(date)) / 1000);
         let interval = seconds / 31536000;
         if (interval > 1) return Math.floor(interval) + " år siden";
@@ -91,8 +95,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const bar = document.getElementById('strength_bar');
         const text = document.getElementById('strength_text');
         
-        // Requiring 40 bits
-        const percent = Math.min((entropy / 40) * 100, 100);
+        // Progress based on 100 bits
+        const percent = Math.min((entropy / 100) * 100, 100);
         bar.style.width = percent + '%';
         
         if (entropy < 28) {
@@ -100,15 +104,51 @@ document.addEventListener('DOMContentLoaded', () => {
             text.innerText = 'Veldig svakt';
             text.className = 'text-[9px] font-black uppercase tracking-widest mt-1 text-red-500';
         } else if (entropy < 40) {
+            bar.className = 'h-full bg-orange-500 transition-all duration-500';
+            text.innerText = 'Svakt (trenger 40)';
+            text.className = 'text-[9px] font-black uppercase tracking-widest mt-1 text-orange-500';
+        } else if (entropy < 60) {
             bar.className = 'h-full bg-yellow-500 transition-all duration-500';
-            text.innerText = 'Svakt (krever 40 bits)';
+            text.innerText = 'Middels (ok)';
             text.className = 'text-[9px] font-black uppercase tracking-widest mt-1 text-yellow-500';
-        } else {
+        } else if (entropy < 100) {
             bar.className = 'h-full bg-green-500 transition-all duration-500';
-            text.innerText = 'Sterkt nok';
+            text.innerText = 'Sterkt';
             text.className = 'text-[9px] font-black uppercase tracking-widest mt-1 text-green-500';
+        } else {
+            bar.className = 'h-full bg-blue-500 transition-all duration-500 shadow-[0_0_10px_rgba(59,130,246,0.5)]';
+            text.innerText = 'Veldig sterkt';
+            text.className = 'text-[9px] font-black uppercase tracking-widest mt-1 text-blue-500';
         }
 
+        window.validateSignupForm();
+    }
+
+    let isUsernameAvailable = true;
+
+    window.checkUsername = async function(username) {
+        const notice = document.getElementById('username_notice');
+        if (!username) {
+            notice.classList.add('hidden');
+            return;
+        }
+
+        try {
+            const res = await fetch(`/api/auth/check-username?username=${encodeURIComponent(username)}`);
+            const data = await res.json();
+            isUsernameAvailable = !data.exists;
+
+            notice.classList.remove('hidden');
+            if (isUsernameAvailable) {
+                notice.innerText = 'Brukernavn er ledig';
+                notice.className = 'text-[9px] font-black uppercase tracking-widest mt-1 text-green-500';
+            } else {
+                notice.innerText = 'Brukernavn er tatt';
+                notice.className = 'text-[9px] font-black uppercase tracking-widest mt-1 text-red-500';
+            }
+        } catch (e) {
+            console.error("Failed to check username", e);
+        }
         window.validateSignupForm();
     }
 
@@ -133,7 +173,7 @@ document.addEventListener('DOMContentLoaded', () => {
             confirmInput.classList.add('border-gray-200');
         }
 
-        if (isMatch && isStrong) {
+        if (isMatch && isStrong && isUsernameAvailable) {
             submit.disabled = false;
             submit.className = 'flex-1 py-3 bg-blue-600 hover:bg-blue-700 text-white font-black uppercase text-[10px] sm:text-xs rounded-2xl shadow-xl transition-all';
         } else {
