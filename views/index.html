@@ -39,8 +39,8 @@
             }
         }
 
-        /* Mobile Bottom Sheet Styles */
-        @media (max-width: 767px) {
+        /* Mobile/Medium Bottom Sheet Styles */
+        @media (max-width: 1023px) {
             #detail_aside {
                 width: 100% !important;
                 height: 70vh !important;
@@ -49,9 +49,9 @@
                 left: 0 !important;
                 right: 0 !important;
                 top: auto !important;
-                border-l-0 !important;
-                border-t border-gray-200 !important;
-                border-radius: 2rem 2.5rem 0 0 !important;
+                border-left: none !important;
+                border-top: 1px solid #e5e7eb !important;
+                border-radius: 2.5rem 2.5rem 0 0 !important;
                 transform: translateY(100%) !important;
                 z-index: 2000 !important;
                 display: block !important;
@@ -83,10 +83,10 @@
                 <div class="flex-1 relative min-w-0">
                     <svg class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 size-4 text-gray-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 3.5a5.5 5.5 0 1 0 0 11 5.5 5.5 0 0 0 0-11ZM2 9a7 7 0 1 1 12.452 4.391l3.328 3.329a.75.75 0 1 1-1.06 1.06l-3.329-3.328A7 7 0 0 1 2 9Z" clip-rule="evenodd"/></svg>
                     <input type="search" placeholder="Søk..." class="block w-full rounded-xl border-0 py-1.5 pl-9 pr-3 text-gray-900 ring-1 ring-inset ring-gray-200 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 text-xs sm:text-sm bg-gray-50/50" oninput="if(this.value === '') { document.getElementById('header_lookup_results').classList.add('hidden'); } else { debouncedHeaderLookup(this.value); }">
-                    <div id="header_lookup_results" class="absolute top-full mt-2 left-0 w-[280px] sm:w-full bg-white rounded-xl shadow-2xl border border-gray-100 hidden z-[1001] max-h-[60vh] overflow-y-auto"></div>
+                    <div id="header_lookup_results" class="absolute top-full mt-2 left-0 w-[280px] sm:w-full bg-white rounded-xl shadow-2xl border border-gray-100 hidden z-[1001] max-h-[60vh] overflow-y-auto overflow-x-hidden"></div>
                 </div>
 
-                <!-- Action Buttons (Some hide on very small screens) -->
+                <!-- Action Buttons -->
                 <div class="flex items-center gap-x-1 sm:gap-x-2 shrink-0">
                     <a href="/kart/historikk" class="p-2 text-gray-500 hover:text-blue-600 rounded-lg hover:bg-blue-50 transition-all" title="Historikk">
                         <svg class="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/></svg>
@@ -111,7 +111,7 @@
                     {{else}}
                         <button class="bg-gray-900 text-white p-2 sm:px-4 sm:py-2 rounded-xl hover:bg-gray-800 transition-all" onclick="document.getElementById('loginDialog').showModal()">
                             <svg class="size-5 sm:hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"/></svg>
-                            <span class="hidden sm:inline text-xs font-black uppercase">Bli med</span>
+                            <span class="hidden sm:inline text-xs font-black uppercase tracking-tighter">Bli med</span>
                         </button>
                     {{end}}
                 </div>
@@ -126,9 +126,9 @@
         </main>
 
         <!-- Detail Sidebar / Bottom Sheet -->
-        <aside id="detail_aside" class="w-96 border-l border-gray-200 bg-white overflow-y-auto hidden lg:block transition-all duration-300 translate-x-full absolute right-0 top-0 bottom-0 z-20 xl:relative xl:translate-x-0">
-            <div class="md:hidden sheet-handle"></div>
-            <button class="md:hidden absolute right-6 top-4 text-gray-400 text-2xl" onclick="window.closeAside()">&times;</button>
+        <aside id="detail_aside" class="w-96 border-l border-gray-200 bg-white overflow-y-auto hidden lg:block transition-all duration-300 translate-x-full absolute right-0 top-0 bottom-0 z-20 lg:relative lg:translate-x-0">
+            <div class="lg:hidden sheet-handle"></div>
+            <button class="lg:hidden absolute right-6 top-4 text-gray-400 text-2xl" onclick="window.closeAside()">&times;</button>
             
             <div class="p-6 sm:p-8">
                 <div id="aside_placeholder" class="text-center py-20">
