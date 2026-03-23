@@ -186,13 +186,17 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     window.showSignup = function() {
-        document.getElementById('loginDialog').close();
-        document.getElementById('signupDialog').showModal();
+        const loginDialog = document.getElementById('loginDialog');
+        const signupDialog = document.getElementById('signupDialog');
+        if (loginDialog) loginDialog.close();
+        if (signupDialog) signupDialog.showModal();
     }
 
     window.showLogin = function() {
-        document.getElementById('signupDialog').close();
-        document.getElementById('loginDialog').showModal();
+        const loginDialog = document.getElementById('loginDialog');
+        const signupDialog = document.getElementById('signupDialog');
+        if (signupDialog) signupDialog.close();
+        if (loginDialog) loginDialog.showModal();
     }
 
     window.lookupCoordinatesHeader = async function(address) {
