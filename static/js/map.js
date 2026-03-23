@@ -326,7 +326,14 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // 3. Map Click Handler (Reverse Geocoding)
+    // 3. Map Interaction Handlers
+    map.on('click', () => {
+        // Hide sidebar/bottom-sheet on mobile/tablet when map is clicked
+        if (window.innerWidth < 1024) {
+            window.closeAside();
+        }
+    });
+
     map.on('dblclick', async (e) => {
         const { lat, lng } = e.latlng;
         try {
