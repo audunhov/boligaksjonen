@@ -19,8 +19,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Add Layer Control
     const baseMaps = {
-        "Topografisk": topo,
-        "Detaljert (OSM)": detailed
+        "Kartverket": topo,
+        "OpenStreetMap": detailed
     };
     L.control.layers(baseMaps, null, { position: 'bottomleft' }).addTo(map);
 
