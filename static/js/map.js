@@ -7,6 +7,9 @@ L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
 }).addTo(map);
 
+// Create a marker cluster group
+const markers = L.markerClusterGroup();
+
 // Fetch house data from the API
 fetch('/api/houses')
     .then(response => {
@@ -16,17 +19,22 @@ fetch('/api/houses')
         return response.json();
     })
     .then(houses => {
-        // Iterate over the data and add markers
+        // Iterate over the data and add markers to the cluster group
         houses.forEach(house => {
             const popupContent = `
                 <b>${house.address}</b><br>
+                <span class="badge badge-${house.ownership_type}">${house.ownership_type}</span><br>
                 ${house.description}
             `;
             
-            L.marker([house.lat, house.lng])
-                .addTo(map)
+            const marker = L.marker([house.lat, house.lng])
                 .bindPopup(popupContent);
+            
+            markers.addLayer(marker);
         });
+
+        // Add the cluster group to the map
+        map.addLayer(markers);
     })
     .catch(error => {
         console.error('There was a problem fetching the house data:', error);
