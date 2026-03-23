@@ -1,4 +1,4 @@
-// Initialize the map
+// Map Logic for Boligaksjonen
 document.addEventListener('DOMContentLoaded', () => {
     // Load saved position or default to Oslo
     const savedPos = JSON.parse(localStorage.getItem('map_position') || '{"lat": 59.9139, "lng": 10.7522, "zoom": 13}');
@@ -57,14 +57,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const debouncedHeaderLookup = debounce((val) => window.lookupCoordinatesHeader(val));
     const debouncedModalLookup = debounce(() => window.lookupCoordinates());
-    const debouncedUsernameCheck = debounce((val) => window.checkUsername(val));
-
     window.debouncedHeaderLookup = debouncedHeaderLookup;
     window.debouncedModalLookup = debouncedModalLookup;
-    window.debouncedUsernameCheck = debouncedUsernameCheck;
 
     function timeAgo(date) {
-
         const seconds = Math.floor((new Date() - new Date(date)) / 1000);
         let interval = seconds / 31536000;
         if (interval > 1) return Math.floor(interval) + " år siden";
@@ -79,129 +75,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return "akkurat nå";
     }
 
-    // 2. Auth & Validation Helpers
-    window.calculateEntropy = function(password) {
-        if (!password) return 0;
-        let poolSize = 0;
-        if (/[a-z]/.test(password)) poolSize += 26;
-        if (/[A-Z]/.test(password)) poolSize += 26;
-        if (/[0-9]/.test(password)) poolSize += 10;
-        if (/[^a-zA-Z0-9]/.test(password)) poolSize += 33;
-        return password.length * Math.log2(poolSize);
-    }
-
-    window.checkPasswordStrength = function(password) {
-        const entropy = window.calculateEntropy(password);
-        const bar = document.getElementById('strength_bar');
-        const text = document.getElementById('strength_text');
-        
-        // Progress based on 100 bits
-        const percent = Math.min((entropy / 100) * 100, 100);
-        bar.style.width = percent + '%';
-        
-        if (entropy < 28) {
-            bar.className = 'h-full bg-red-500 transition-all duration-500';
-            text.innerText = 'Veldig svakt';
-            text.className = 'text-[9px] font-black uppercase tracking-widest mt-1 text-red-500';
-        } else if (entropy < 40) {
-            bar.className = 'h-full bg-orange-500 transition-all duration-500';
-            text.innerText = 'Svakt';
-            text.className = 'text-[9px] font-black uppercase tracking-widest mt-1 text-orange-500';
-        } else if (entropy < 60) {
-            bar.className = 'h-full bg-yellow-500 transition-all duration-500';
-            text.innerText = 'Middels';
-            text.className = 'text-[9px] font-black uppercase tracking-widest mt-1 text-yellow-500';
-        } else if (entropy < 100) {
-            bar.className = 'h-full bg-green-500 transition-all duration-500';
-            text.innerText = 'Sterkt';
-            text.className = 'text-[9px] font-black uppercase tracking-widest mt-1 text-green-500';
-        } else {
-            bar.className = 'h-full bg-blue-500 transition-all duration-500 shadow-[0_0_10px_rgba(59,130,246,0.5)]';
-            text.innerText = 'Veldig sterkt';
-            text.className = 'text-[9px] font-black uppercase tracking-widest mt-1 text-blue-500';
-        }
-
-        window.validateSignupForm();
-    }
-
-    let isUsernameAvailable = true;
-
-    window.checkUsername = async function(username) {
-        const notice = document.getElementById('username_notice');
-        if (!username) {
-            notice.classList.add('hidden');
-            return;
-        }
-
-        try {
-            const res = await fetch(`/api/auth/check-username?username=${encodeURIComponent(username)}`);
-            const data = await res.json();
-            isUsernameAvailable = !data.exists;
-
-            notice.classList.remove('hidden');
-            if (isUsernameAvailable) {
-                notice.innerText = 'Brukernavn er ledig';
-                notice.className = 'text-[9px] font-black uppercase tracking-widest mt-1 text-green-500';
-            } else {
-                notice.innerText = 'Brukernavn er tatt';
-                notice.className = 'text-[9px] font-black uppercase tracking-widest mt-1 text-red-500';
-            }
-        } catch (e) {
-            console.error("Failed to check username", e);
-        }
-        window.validateSignupForm();
-    }
-
-    window.validateSignupForm = function() {
-        const pass = document.getElementById('signup_password').value;
-        const confirm = document.getElementById('signup_confirm').value;
-        const submit = document.getElementById('signup_submit');
-        const entropy = window.calculateEntropy(pass);
-        
-        const isMatch = pass === confirm && pass !== "";
-        const isStrong = entropy >= 40;
-
-        const confirmInput = document.getElementById('signup_confirm');
-        if (confirm !== "" && !isMatch) {
-            confirmInput.classList.add('border-red-500');
-            confirmInput.classList.remove('border-gray-200');
-        } else if (isMatch) {
-            confirmInput.classList.add('border-green-500');
-            confirmInput.classList.remove('border-red-500', 'border-gray-200');
-        } else {
-            confirmInput.classList.remove('border-red-500', 'border-green-500');
-            confirmInput.classList.add('border-gray-200');
-        }
-
-        if (isMatch && isStrong && isUsernameAvailable) {
-            submit.disabled = false;
-            submit.className = 'flex-1 py-3 bg-blue-600 hover:bg-blue-700 text-white font-black uppercase text-[10px] sm:text-xs rounded-2xl shadow-xl transition-all';
-        } else {
-            submit.disabled = true;
-            submit.className = 'flex-1 py-3 bg-gray-200 cursor-not-allowed text-white font-black uppercase text-[10px] sm:text-xs rounded-2xl shadow-xl transition-all';
-        }
-    }
-
-    window.validateSignup = function(e) {
-        const pass = document.getElementById('signup_password').value;
-        const confirm = document.getElementById('signup_confirm').value;
-        
-        if (pass !== confirm) {
-            alert("Passordene er ikke like!");
-            e.preventDefault();
-            return false;
-        }
-        
-        const entropy = window.calculateEntropy(pass);
-        if (entropy < 40) {
-            alert("Passordet er for svakt. Vennligst bruk et lengre eller mer komplekst passord.");
-            e.preventDefault();
-            return false;
-        }
-        return true;
-    }
-
-    // 3. Define global UI helpers
+    // 2. Define global UI helpers
     window.openAddModal = function() {
         document.getElementById('editForm').reset();
         document.getElementById('edit_id').value = "0";
@@ -244,21 +118,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     window.closeAside = function() {
-        document.getElementById('detail_aside').classList.remove('is-open');
-    }
-
-    window.showSignup = function() {
-        const loginDialog = document.getElementById('loginDialog');
-        const signupDialog = document.getElementById('signupDialog');
-        if (loginDialog) loginDialog.close();
-        if (signupDialog) signupDialog.showModal();
-    }
-
-    window.showLogin = function() {
-        const loginDialog = document.getElementById('loginDialog');
-        const signupDialog = document.getElementById('signupDialog');
-        if (signupDialog) signupDialog.close();
-        if (loginDialog) loginDialog.showModal();
+        const aside = document.getElementById('detail_aside');
+        if (aside) aside.classList.remove('is-open');
     }
 
     window.lookupCoordinatesHeader = async function(address) {
@@ -341,15 +202,6 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('edit_lat').value = addr.representasjonspunkt.lat;
         document.getElementById('edit_lng').value = addr.representasjonspunkt.lon;
         
-        // Check for existing deleted entry
-        const existingDeleted = allHouses.find(h => h.address === addr.adressetekst && h.is_deleted);
-        const notice = document.getElementById('restore_notice');
-        if (existingDeleted) {
-            notice.classList.remove('hidden');
-        } else {
-            notice.classList.add('hidden');
-        }
-
         const statusDiv = document.getElementById('lookup_status');
         const resultsDiv = document.getElementById('lookup_results');
         statusDiv.innerText = `Valgt: ${addr.adressetekst}`;
@@ -366,7 +218,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (placeholder) placeholder.classList.add('hidden');
         if (content) content.classList.remove('hidden');
         
-        aside.classList.add('is-open');
+        if (aside) aside.classList.add('is-open');
 
         document.getElementById('aside_address').innerText = house.address;
         document.getElementById('aside_description').innerHTML = house.description.replace(/\r\n/g, '<br>').replace(/\n/g, '<br>');
@@ -388,13 +240,16 @@ document.addEventListener('DOMContentLoaded', () => {
             'annet': 'bg-gray-100 text-gray-500'
         };
         badge.innerHTML = `<span class="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest ${colors[type] || 'bg-gray-100 text-gray-500'}">${type.replace('-', ' ')}</span>`;
-        document.getElementById('aside_edit_btn').onclick = () => window.openEditModal(house.id);
+        if (document.getElementById('aside_edit_btn')) {
+            document.getElementById('aside_edit_btn').onclick = () => window.openEditModal(house.id);
+        }
 
         window.refreshHistory(house.id);
     }
 
     window.refreshHistory = function(houseID) {
         const historyList = document.getElementById('aside_history_list');
+        if (!historyList) return;
         historyList.innerHTML = '<div class="text-xs text-gray-400">Laster historikk...</div>';
         
         fetch(`/api/houses/history?id=${houseID}`)
