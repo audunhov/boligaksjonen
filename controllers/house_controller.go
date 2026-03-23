@@ -34,6 +34,12 @@ func getLoggedInUserID(r *http.Request) *int {
 	return &id
 }
 
+// Helper to parse int from form value
+func parseInt(s string) int {
+	i, _ := strconv.Atoi(s)
+	return i
+}
+
 // HomeHandler serves the landing page.
 func HomeHandler(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path != "/" {
