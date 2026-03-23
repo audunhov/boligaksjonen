@@ -90,11 +90,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const entropy = window.calculateEntropy(password);
         const bar = document.getElementById('strength_bar');
         const text = document.getElementById('strength_text');
-        const submit = document.getElementById('signup_submit');
         
         // Requiring 40 bits
         const percent = Math.min((entropy / 40) * 100, 100);
-        
         bar.style.width = percent + '%';
         
         if (entropy < 28) {
@@ -111,7 +109,31 @@ document.addEventListener('DOMContentLoaded', () => {
             text.className = 'text-[9px] font-black uppercase tracking-widest mt-1 text-green-500';
         }
 
-        if (entropy >= 40) {
+        window.validateSignupForm();
+    }
+
+    window.validateSignupForm = function() {
+        const pass = document.getElementById('signup_password').value;
+        const confirm = document.getElementById('signup_confirm').value;
+        const submit = document.getElementById('signup_submit');
+        const entropy = window.calculateEntropy(pass);
+        
+        const isMatch = pass === confirm && pass !== "";
+        const isStrong = entropy >= 40;
+
+        const confirmInput = document.getElementById('signup_confirm');
+        if (confirm !== "" && !isMatch) {
+            confirmInput.classList.add('border-red-500');
+            confirmInput.classList.remove('border-gray-200');
+        } else if (isMatch) {
+            confirmInput.classList.add('border-green-500');
+            confirmInput.classList.remove('border-red-500', 'border-gray-200');
+        } else {
+            confirmInput.classList.remove('border-red-500', 'border-green-500');
+            confirmInput.classList.add('border-gray-200');
+        }
+
+        if (isMatch && isStrong) {
             submit.disabled = false;
             submit.className = 'flex-1 py-3 bg-blue-600 hover:bg-blue-700 text-white font-black uppercase text-[10px] sm:text-xs rounded-2xl shadow-xl transition-all';
         } else {
