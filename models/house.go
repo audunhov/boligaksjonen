@@ -109,9 +109,9 @@ func InitDB(filepath string) error {
 	if err == nil && count == 0 {
 		slog.Info("Database is empty, seeding initial mock data")
 		seedData := []House{
-			{Address: "Oslogate 1", Latitude: 59.9079, Longitude: 10.7686, Description: "Tom bolig siden 2023", OwnershipType: "kommune", LastUpdatedBy: "System", UpdatedAt: time.Now()},
-			{Address: "Trondheimsveien 5", Latitude: 59.9194, Longitude: 10.7645, Description: "Tomt lokale i 1. etasje", OwnershipType: "selskap", LastUpdatedBy: "System", UpdatedAt: time.Now()},
-			{Address: "Thorvald Meyers gate 10", Latitude: 59.9234, Longitude: 10.7588, Description: "Oppusningsobjekt, ubebodd", OwnershipType: "privatperson", LastUpdatedBy: "System", UpdatedAt: time.Now()},
+			{Address: "Oslogate 1", Latitude: 59.9079, Longitude: 10.7686, Description: "Tom bolig siden 2023", OwnershipType: "offentlig", LastUpdatedBy: "System", UpdatedAt: time.Now()},
+			{Address: "Trondheimsveien 5", Latitude: 59.9194, Longitude: 10.7645, Description: "Tomt lokale i 1. etasje", OwnershipType: "næring", LastUpdatedBy: "System", UpdatedAt: time.Now()},
+			{Address: "Thorvald Meyers gate 10", Latitude: 59.9234, Longitude: 10.7588, Description: "Oppusningsobjekt, ubebodd", OwnershipType: "privat-bolig", LastUpdatedBy: "System", UpdatedAt: time.Now()},
 		}
 		for _, h := range seedData {
 			AddHouse(h, nil, "SystemHash")
