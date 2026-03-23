@@ -1,130 +1,206 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="h-full bg-white">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tom Bolig - Kart</title>
-    <!-- Tailwind CSS -->
+    <title>Tom Bolig - Kontrollpanel</title>
+    
+    <!-- Tailwind CSS & Elements -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindplus/elements@1" type="module"></script>
+    
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
-    <!-- Leaflet.markercluster CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css" />
+    
     <style>
-        #map { height: 100vh; width: 100vw; }
-        .leaflet-popup-content-wrap { border-radius: 8px; }
+        #map { height: 100%; width: 100%; z-index: 1; }
+        .leaflet-container { font-family: inherit; }
         dialog::backdrop { background: rgba(0,0,0,0.5); backdrop-filter: blur(2px); }
-        .lookup-item:hover { background: #f0f7ff; }
+        .lookup-item:hover { background: #f8fafc; }
     </style>
 </head>
-<body class="bg-gray-100">
-    <!-- Toolbar -->
-    <div class="fixed top-5 left-1/2 -translate-x-1/2 z-[1000] bg-white px-5 py-2.5 rounded-full shadow-xl flex items-center gap-4 whitespace-nowrap border border-gray-100">
-        <h1 class="font-bold text-gray-800 border-r border-gray-200 pr-4">Tom Bolig</h1>
-        <div class="flex items-center gap-1">
-            <button class="px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-full transition-colors shadow-sm" onclick="openAddModal()">Report</button>
-            <a href="/kart/historikk" class="px-3 py-1.5 text-gray-600 hover:text-blue-600 text-sm font-medium rounded-full hover:bg-gray-50 transition-colors">History</a>
-            <a href="/" class="px-3 py-1.5 text-gray-600 hover:text-blue-600 text-sm font-medium rounded-full hover:bg-gray-50 transition-colors">Home</a>
+<body class="h-full overflow-hidden">
+    <!-- Mobile Sidebar Dialog -->
+    <el-dialog>
+        <dialog id="sidebar" class="m-0 p-0 backdrop:bg-transparent lg:hidden">
+            <el-dialog-backdrop class="fixed inset-0 bg-gray-900/80 transition-opacity duration-300 ease-linear"></el-dialog-backdrop>
+            <div tabindex="0" class="fixed inset-0 flex">
+                <el-dialog-panel class="relative mr-16 flex w-full max-w-xs flex-1 transform transition duration-300 ease-in-out">
+                    <div class="absolute left-full top-0 flex w-16 justify-center pt-5">
+                        <button type="button" command="close" commandfor="sidebar" class="-m-2.5 p-2.5 text-white">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="size-6">
+                                <path d="M6 18 18 6M6 6l12 12" stroke-linecap="round" stroke-linejoin="round" />
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="flex grow flex-col gap-y-5 overflow-y-auto bg-gray-900 px-6 pb-4">
+                        <div class="flex h-16 shrink-0 items-center">
+                            <span class="text-white font-black text-xl tracking-tight">Tom Bolig</span>
+                        </div>
+                        <nav class="flex flex-1 flex-col">
+                            <ul role="list" class="-mx-2 space-y-1">
+                                <li><a href="/" class="text-gray-400 hover:text-white hover:bg-gray-800 group flex gap-x-3 rounded-md p-2 text-sm font-semibold">Home</a></li>
+                                <li><a href="/kart" class="bg-gray-800 text-white group flex gap-x-3 rounded-md p-2 text-sm font-semibold">Kart</a></li>
+                                <li><a href="/kart/historikk" class="text-gray-400 hover:text-white hover:bg-gray-800 group flex gap-x-3 rounded-md p-2 text-sm font-semibold">Historikk</a></li>
+                            </ul>
+                        </nav>
+                    </div>
+                </el-dialog-panel>
+            </div>
+        </dialog>
+    </el-dialog>
+
+    <!-- Desktop Slim Sidebar -->
+    <div class="hidden lg:fixed lg:inset-y-0 lg:left-0 lg:z-50 lg:block lg:w-20 lg:overflow-y-auto lg:bg-gray-900 lg:pb-4 border-r border-white/10">
+        <div class="flex h-16 shrink-0 items-center justify-center">
+            <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-black text-xs italic">TB</div>
         </div>
-        
-        <div class="flex items-center gap-2 border-l border-gray-200 pl-4">
-            {{if .UserID}}
-                <span class="text-sm text-gray-500 font-medium">{{.Username}}</span>
-                <a href="/logout" class="px-3 py-1.5 text-red-500 hover:text-red-600 text-sm font-medium rounded-full hover:bg-red-50 transition-colors">Logout</a>
-            {{else}}
-                <button class="px-3 py-1.5 text-gray-600 hover:text-blue-600 text-sm font-medium rounded-full hover:bg-gray-50 transition-colors" onclick="document.getElementById('loginDialog').showModal()">Login</button>
-                <button class="px-3 py-1.5 text-gray-600 hover:text-blue-600 text-sm font-medium rounded-full hover:bg-gray-50 transition-colors" onclick="document.getElementById('signupDialog').showModal()">Signup</button>
-            {{end}}
+        <nav class="mt-8">
+            <ul role="list" class="flex flex-col items-center space-y-4">
+                <li><a href="/" title="Home" class="text-gray-400 hover:text-white hover:bg-white/5 p-3 rounded-md transition-all"><svg class="size-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" stroke-linecap="round" stroke-linejoin="round"/></svg></a></li>
+                <li><a href="/kart" title="Kart" class="bg-white/10 text-white p-3 rounded-md transition-all"><svg class="size-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" stroke-linecap="round" stroke-linejoin="round"/><path d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" stroke-linecap="round" stroke-linejoin="round"/></svg></a></li>
+                <li><a href="/kart/historikk" title="Historikk" class="text-gray-400 hover:text-white hover:bg-white/5 p-3 rounded-md transition-all"><svg class="size-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" stroke-linecap="round" stroke-linejoin="round"/></svg></a></li>
+            </ul>
+        </nav>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="lg:pl-20 flex flex-col h-full">
+        <!-- Top Sticky Header -->
+        <header class="sticky top-0 z-40 flex h-16 shrink-0 items-center gap-x-4 border-b border-gray-200 bg-white px-4 shadow-sm sm:gap-x-6 sm:px-6 lg:px-8">
+            <button type="button" command="show-modal" commandfor="sidebar" class="-m-2.5 p-2.5 text-gray-700 lg:hidden">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="size-6">
+                    <path d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+            </button>
+
+            <div class="flex flex-1 gap-x-4 self-stretch lg:gap-x-6">
+                <!-- Search / Address Lookup in Header -->
+                <div class="flex flex-1 items-center">
+                    <div class="relative w-full max-w-lg">
+                        <svg class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 size-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 3.5a5.5 5.5 0 1 0 0 11 5.5 5.5 0 0 0 0-11ZM2 9a7 7 0 1 1 12.452 4.391l3.328 3.329a.75.75 0 1 1-1.06 1.06l-3.329-3.328A7 7 0 0 1 2 9Z" clip-rule="evenodd"/></svg>
+                        <input type="search" placeholder="Søk etter adresse for å rapportere..." class="block w-full rounded-full border-0 py-1.5 pl-10 pr-3 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm" onkeydown="if(event.key === 'Enter') lookupCoordinatesHeader(this.value)">
+                    </div>
+                    <div id="header_lookup_results" class="absolute top-14 left-8 right-8 lg:left-auto lg:w-[512px] bg-white rounded-xl shadow-2xl border border-gray-100 hidden z-[1001] max-h-96 overflow-y-auto"></div>
+                </div>
+
+                <div class="flex items-center gap-x-4 lg:gap-x-6">
+                    <button type="button" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold rounded-lg shadow-sm transition-all whitespace-nowrap" onclick="openAddModal()">
+                        Rapporter bolig
+                    </button>
+
+                    <div class="hidden lg:block lg:h-6 lg:w-px lg:bg-gray-200"></div>
+
+                    <!-- User Dropdown -->
+                    {{if .UserID}}
+                        <el-dropdown class="relative">
+                            <button class="flex items-center p-1.5 rounded-full hover:bg-gray-50 transition-all">
+                                <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-xs uppercase">{{index .Username 0}}</div>
+                                <span class="hidden lg:flex lg:items-center">
+                                    <span class="ml-3 text-sm font-semibold text-gray-900">{{.Username}}</span>
+                                    <svg viewBox="0 0 20 20" fill="currentColor" class="ml-1 size-5 text-gray-400"><path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd"/></svg>
+                                </span>
+                            </button>
+                            <el-menu anchor="bottom end" popover class="w-48 mt-2 origin-top-right rounded-xl bg-white p-1 shadow-2xl ring-1 ring-black/5 focus:outline-none transition-all">
+                                <a href="/logout" class="block px-3 py-2 text-sm font-medium text-red-600 rounded-lg hover:bg-red-50">Logg ut</a>
+                            </el-menu>
+                        </el-dropdown>
+                    {{else}}
+                        <div class="flex items-center gap-2">
+                            <button class="text-sm font-semibold text-gray-900 hover:text-blue-600 px-3 py-2" onclick="document.getElementById('loginDialog').showModal()">Logg inn</button>
+                            <button class="bg-gray-900 text-white text-sm font-bold px-4 py-2 rounded-lg hover:bg-gray-800" onclick="document.getElementById('signupDialog').showModal()">Registrer</button>
+                        </div>
+                    {{end}}
+                </div>
+            </div>
+        </header>
+
+        <!-- Dynamic Content (Map + Sidebar) -->
+        <div class="flex-1 flex overflow-hidden relative">
+            <!-- Leaflet Map -->
+            <main class="flex-1 relative z-10">
+                <div id="map"></div>
+            </main>
+
+            <!-- Detail Sidebar (Hidden by default, shown when house is clicked) -->
+            <aside id="detail_aside" class="w-96 border-l border-gray-200 bg-gray-50 overflow-y-auto hidden lg:block transition-all duration-300 translate-x-full absolute right-0 top-0 bottom-0 z-20 xl:relative xl:translate-x-0">
+                <div class="p-8">
+                    <div id="aside_placeholder" class="text-center py-20">
+                        <div class="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4 text-gray-400">
+                            <svg class="size-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/><path d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z"/></svg>
+                        </div>
+                        <h3 class="font-bold text-gray-900">Ingen bolig valgt</h3>
+                        <p class="text-sm text-gray-500 mt-1">Klikk på en markør i kartet for å se detaljer.</p>
+                    </div>
+                    <div id="aside_content" class="hidden">
+                        <div id="aside_badge" class="mb-4"></div>
+                        <h2 id="aside_address" class="text-2xl font-black text-gray-900 leading-tight mb-4"></h2>
+                        <div id="aside_description" class="text-gray-600 mb-8 leading-relaxed"></div>
+                        
+                        <div class="space-y-4 border-t border-gray-200 pt-6">
+                            <div class="flex items-center gap-3 text-sm">
+                                <div class="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center text-gray-500"><svg class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"/></svg></div>
+                                <div><p class="text-gray-400 font-bold uppercase text-[10px] tracking-widest">Sist oppdatert av</p><p id="aside_author" class="font-bold text-gray-900"></p></div>
+                            </div>
+                            <div class="flex items-center gap-3 text-sm">
+                                <div class="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center text-gray-500"><svg class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5"/></svg></div>
+                                <div><p class="text-gray-400 font-bold uppercase text-[10px] tracking-widest">Dato</p><p id="aside_date" class="font-bold text-gray-900"></p></div>
+                            </div>
+                        </div>
+
+                        <div class="mt-10">
+                            <button id="aside_edit_btn" class="w-full py-4 bg-gray-900 text-white font-bold rounded-xl shadow-lg hover:bg-gray-800 transition-all flex items-center justify-center gap-2">
+                                <svg class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10"/></svg>
+                                Rediger oppføring
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </aside>
         </div>
     </div>
-    
-    <div id="map"></div>
 
-    <!-- Modals (Reusable styles) -->
-    {{$dialog_classes := "border-none rounded-xl shadow-2xl p-0 w-[90%] max-w-md"}}
-    {{$header_classes := "flex justify-between items-center border-bottom border-gray-100 px-6 py-4 bg-gray-50/50"}}
-    {{$form_group := "px-6 py-3"}}
-    {{$label := "block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1"}}
-    {{$input := "w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all text-gray-800"}}
+    <!-- Modals (Re-using logic, upgrading design) -->
+    {{$dialog_classes := "border-none rounded-2xl shadow-2xl p-0 w-[90%] max-w-md"}}
+    {{$header_classes := "flex justify-between items-center px-8 py-6 bg-gray-50 border-b border-gray-100"}}
+    {{$input := "w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all placeholder:text-gray-400 text-sm"}}
+    {{$label := "block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2"}}
 
-    <!-- Login Dialog -->
-    <dialog id="loginDialog" class="{{$dialog_classes}}">
+    <!-- Report/Edit Dialog -->
+    <dialog id="editDialog" class="border-none rounded-2xl shadow-2xl p-0 w-[95%] max-w-lg overflow-hidden">
         <div class="{{$header_classes}}">
-            <h2 class="text-lg font-bold text-gray-800">Login</h2>
-            <button class="text-gray-400 hover:text-gray-600 text-2xl" onclick="document.getElementById('loginDialog').close()">&times;</button>
+            <h2 id="dialog_title" class="text-xl font-black text-gray-900">Rapporter tom bolig</h2>
+            <button class="text-gray-400 hover:text-gray-900 text-3xl" onclick="document.getElementById('editDialog').close()">&times;</button>
         </div>
-        <form action="/login" method="POST" class="py-4">
-            <div class="{{$form_group}}">
-                <label class="{{$label}}">Username</label>
-                <input type="text" name="username" class="{{$input}}" required>
-            </div>
-            <div class="{{$form_group}}">
-                <label class="{{$label}}">Password</label>
-                <input type="password" name="password" class="{{$input}}" required>
-            </div>
-            <div class="px-6 py-4 bg-gray-50 mt-4 flex justify-end gap-3 rounded-b-xl">
-                <button type="button" class="px-4 py-2 text-gray-600 font-medium hover:text-gray-800" onclick="document.getElementById('loginDialog').close()">Cancel</button>
-                <button type="submit" class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg shadow-sm transition-all">Login</button>
-            </div>
-        </form>
-    </dialog>
-
-    <!-- Signup Dialog -->
-    <dialog id="signupDialog" class="{{$dialog_classes}}">
-        <div class="{{$header_classes}}">
-            <h2 class="text-lg font-bold text-gray-800">Signup</h2>
-            <button class="text-gray-400 hover:text-gray-600 text-2xl" onclick="document.getElementById('signupDialog').close()">&times;</button>
-        </div>
-        <form action="/signup" method="POST" class="py-4">
-            <div class="{{$form_group}}">
-                <label class="{{$label}}">Username</label>
-                <input type="text" name="username" class="{{$input}}" required>
-            </div>
-            <div class="{{$form_group}}">
-                <label class="{{$label}}">Password</label>
-                <input type="password" name="password" class="{{$input}}" required>
-            </div>
-            <div class="px-6 py-4 bg-gray-50 mt-4 flex justify-end gap-3 rounded-b-xl">
-                <button type="button" class="px-4 py-2 text-gray-600 font-medium hover:text-gray-800" onclick="document.getElementById('signupDialog').close()">Cancel</button>
-                <button type="submit" class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg shadow-sm transition-all">Signup</button>
-            </div>
-        </form>
-    </dialog>
-
-    <!-- Edit Dialog -->
-    <dialog id="editDialog" class="border-none rounded-xl shadow-2xl p-0 w-[95%] max-w-lg overflow-hidden">
-        <div class="{{$header_classes}}">
-            <h2 id="dialog_title" class="text-lg font-bold text-gray-800">Edit House Entry</h2>
-            <button class="text-gray-400 hover:text-gray-600 text-2xl" onclick="document.getElementById('editDialog').close()">&times;</button>
-        </div>
-        <form id="editForm" action="/houses/update" method="POST" class="max-h-[80vh] overflow-y-auto">
+        <form id="editForm" action="/houses/update" method="POST" class="max-h-[75vh] overflow-y-auto p-8 space-y-6">
             <input type="hidden" id="edit_id" name="id">
             
-            <div class="{{$form_group}} mt-2">
-                <label class="{{$label}}">Address</label>
+            <div>
+                <label class="{{$label}}">Adresse</label>
                 <div class="flex gap-2">
-                    <input type="text" id="edit_address" name="address" required class="{{$input}}" placeholder="e.g. Storgata 10, Oslo">
-                    <button type="button" class="px-4 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-lg transition-colors text-sm" onclick="lookupCoordinates()">Lookup</button>
+                    <input type="text" id="edit_address" name="address" required class="{{$input}}" placeholder="f.eks. Storgata 10, Oslo">
+                    <button type="button" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-xl text-xs transition-all" onclick="lookupCoordinates()">Slå opp</button>
                 </div>
-                <div id="lookup_status" class="text-xs mt-1.5 text-gray-500 font-medium"></div>
-                <div id="lookup_results" class="max-height-[150px] overflow-y-auto border border-gray-200 rounded-lg mt-2 hidden bg-white shadow-inner"></div>
+                <div id="lookup_status" class="text-[10px] mt-1.5 font-bold uppercase tracking-tight text-gray-400"></div>
+                <div id="lookup_results" class="border border-gray-100 rounded-xl mt-2 hidden bg-white shadow-sm overflow-hidden"></div>
             </div>
 
-            <div class="flex gap-4 px-6 py-3">
-                <div class="flex-1">
-                    <label class="{{$label}}">Latitude</label>
-                    <input type="number" step="any" id="edit_lat" name="lat" required readonly class="{{$input}} bg-gray-50 text-gray-400 cursor-not-allowed">
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="{{$label}}">Breddegrad</label>
+                    <input type="number" step="any" id="edit_lat" name="lat" required readonly class="{{$input}} bg-gray-50/50 text-gray-400 cursor-not-allowed">
                 </div>
-                <div class="flex-1">
-                    <label class="{{$label}}">Longitude</label>
-                    <input type="number" step="any" id="edit_lng" name="lng" required readonly class="{{$input}} bg-gray-50 text-gray-400 cursor-not-allowed">
+                <div>
+                    <label class="{{$label}}">Lengdegrad</label>
+                    <input type="number" step="any" id="edit_lng" name="lng" required readonly class="{{$input}} bg-gray-50/50 text-gray-400 cursor-not-allowed">
                 </div>
             </div>
 
-            <div class="{{$form_group}}">
-                <label class="{{$label}}">Building Type / Ownership</label>
-                <select id="edit_ownership_type" name="ownership_type" onchange="toggleFreetext(this.value)" class="{{$input}}">
+            <div>
+                <label class="{{$label}}">Kategori / Eieform</label>
+                <select id="edit_ownership_type" name="ownership_type" onchange="toggleFreetext(this.value)" class="{{$input}} appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20fill%3D%22none%22%20viewBox%3D%220%200%2020%2020%22%3E%3Cpath%20stroke%3D%22%236b7280%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20stroke-width%3D%221.5%22%20d%3D%22m6%208%204%204%204-4%22%2F%3E%3C%2Fsvg%3E')] bg-[length:1.25rem_1.25rem] bg-[right_0.75rem_center] bg-no-repeat pr-10">
                     <option value="privat-bolig">Privat bolig (Enebolig, rekkehus)</option>
                     <option value="privat-bygård">Privat bygård/blokk</option>
                     <option value="offentlig">Kommunal/Offentlig bygg</option>
@@ -132,45 +208,68 @@
                     <option value="industri">Industri/Lager</option>
                     <option value="gård">Gård/Småbruk</option>
                     <option value="annet">Annet / Vet ikke</option>
-                    <option value="freetext">Specify other...</option>
+                    <option value="freetext">Spesifiser annen...</option>
                 </select>
             </div>
 
-            <div id="edit_freetext_group" class="{{$form_group}} hidden">
-                <label class="{{$label}}">Specify Category</label>
+            <div id="edit_freetext_group" class="hidden">
+                <label class="{{$label}}">Beskriv kategori</label>
                 <input type="text" id="edit_ownership_freetext" name="ownership_freetext" class="{{$input}}">
             </div>
 
-            <div class="{{$form_group}} mb-4">
-                <label class="{{$label}}">Description</label>
-                <textarea id="edit_description" name="description" required class="{{$input}} h-24 resize-none"></textarea>
+            <div>
+                <label class="{{$label}}">Beskrivelse</label>
+                <textarea id="edit_description" name="description" required class="{{$input}} h-32 resize-none" placeholder="Hvorfor tror du boligen er tom? Hvor lenge har den stått slik?"></textarea>
             </div>
 
-            <div class="px-6 py-4 bg-gray-50 flex justify-end gap-3 border-t border-gray-100">
-                <button type="button" class="px-4 py-2 text-gray-600 font-medium hover:text-gray-800" onclick="document.getElementById('editDialog').close()">Cancel</button>
-                <button type="submit" class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg shadow-sm transition-all">Save Changes</button>
+            <div class="flex gap-3 pt-4">
+                <button type="button" class="flex-1 py-4 text-gray-500 font-bold hover:text-gray-900" onclick="document.getElementById('editDialog').close()">Avbryt</button>
+                <button type="submit" class="flex-1 py-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg shadow-blue-100 transition-all">Lagre oppføring</button>
             </div>
         </form>
     </dialog>
 
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        brand: {
-                            primary: '#3498db',
-                            secondary: '#2ecc71',
-                        }
-                    }
-                }
-            }
-        }
+    <!-- Auth Dialogs (Login/Signup) -->
+    <dialog id="loginDialog" class="{{$dialog_classes}}">
+        <div class="p-8">
+            <div class="flex justify-between items-center mb-8">
+                <h2 class="text-2xl font-black text-gray-900">Logg inn</h2>
+                <button class="text-gray-400 hover:text-gray-900 text-2xl" onclick="document.getElementById('loginDialog').close()">&times;</button>
+            </div>
+            <form action="/login" method="POST" class="space-y-4">
+                <div><label class="{{$label}}">Brukernavn</label><input type="text" name="username" required class="{{$input}}"></div>
+                <div><label class="{{$label}}">Passord</label><input type="password" name="password" required class="{{$input}}"></div>
+                <div class="pt-4 flex gap-3">
+                    <button type="button" class="flex-1 py-3 text-gray-500 font-bold" onclick="document.getElementById('loginDialog').close()">Avbryt</button>
+                    <button type="submit" class="flex-1 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg shadow-blue-100 transition-all">Logg inn</button>
+                </div>
+            </form>
+        </div>
+    </dialog>
 
+    <dialog id="signupDialog" class="{{$dialog_classes}}">
+        <div class="p-8">
+            <div class="flex justify-between items-center mb-8">
+                <h2 class="text-2xl font-black text-gray-900">Registrer</h2>
+                <button class="text-gray-400 hover:text-gray-900 text-2xl" onclick="document.getElementById('signupDialog').close()">&times;</button>
+            </div>
+            <form action="/signup" method="POST" class="space-y-4">
+                <div><label class="{{$label}}">Brukernavn</label><input type="text" name="username" required class="{{$input}}"></div>
+                <div><label class="{{$label}}">Passord</label><input type="password" name="password" required class="{{$input}}"></div>
+                <div class="pt-4 flex gap-3">
+                    <button type="button" class="flex-1 py-3 text-gray-500 font-bold" onclick="document.getElementById('signupDialog').close()">Avbryt</button>
+                    <button type="submit" class="flex-1 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg shadow-blue-100 transition-all">Registrer</button>
+                </div>
+            </form>
+        </div>
+    </dialog>
+
+    <script>
+        // Global Map UI Helpers
         function openAddModal() {
             document.getElementById('editForm').reset();
             document.getElementById('edit_id').value = "0";
-            document.getElementById('dialog_title').innerText = "Report Empty House";
+            document.getElementById('dialog_title').innerText = "Rapporter tom bolig";
             document.getElementById('edit_freetext_group').classList.add('hidden');
             document.getElementById('lookup_status').innerText = '';
             document.getElementById('editDialog').showModal();
@@ -178,13 +277,41 @@
 
         function toggleFreetext(value) {
             const freetextGroup = document.getElementById('edit_freetext_group');
-            const freetextInput = document.getElementById('edit_ownership_freetext');
             if (value === 'freetext') {
                 freetextGroup.classList.remove('hidden');
-                freetextInput.required = true;
             } else {
                 freetextGroup.classList.add('hidden');
-                freetextInput.required = false;
+            }
+        }
+
+        async function lookupCoordinatesHeader(address) {
+            const resultsDiv = document.getElementById('header_lookup_results');
+            if (!address) {
+                resultsDiv.classList.add('hidden');
+                return;
+            }
+
+            try {
+                const response = await fetch(`https://ws.geonorge.no/adresser/v1/sok?sok=${encodeURIComponent(address)}&treffPerSide=10`);
+                const data = await response.json();
+
+                if (data.adresser && data.adresser.length > 0) {
+                    resultsDiv.classList.remove('hidden');
+                    resultsDiv.innerHTML = '';
+                    data.adresser.forEach(addr => {
+                        const item = document.createElement('div');
+                        item.className = 'p-4 cursor-pointer border-b border-gray-50 hover:bg-blue-50 transition-colors text-sm last:border-none flex justify-between items-center';
+                        item.innerHTML = `<div><span class="font-bold text-gray-900">${addr.adressetekst}</span><span class="text-gray-400 ml-2">${addr.poststed}</span></div><span class="text-[10px] font-black text-blue-600 uppercase tracking-widest">Velg</span>`;
+                        item.onclick = () => {
+                            resultsDiv.classList.add('hidden');
+                            openAddModal();
+                            selectAddress(addr);
+                        };
+                        resultsDiv.appendChild(item);
+                    });
+                }
+            } catch (error) {
+                console.error('Header lookup error:', error);
             }
         }
 
@@ -194,12 +321,12 @@
             const resultsDiv = document.getElementById('lookup_results');
             
             if (!address) {
-                statusDiv.innerText = 'Please enter an address first.';
+                statusDiv.innerText = 'Vennligst skriv inn en adresse.';
                 statusDiv.classList.add('text-red-500');
                 return;
             }
 
-            statusDiv.innerText = 'Looking up...';
+            statusDiv.innerText = 'Slår opp...';
             statusDiv.classList.remove('text-red-500', 'text-green-500');
             resultsDiv.classList.add('hidden');
             resultsDiv.innerHTML = '';
@@ -209,23 +336,21 @@
                 const data = await response.json();
 
                 if (data.adresser && data.adresser.length > 0) {
-                    statusDiv.innerText = `Found ${data.adresser.length} results. Please select:`;
+                    statusDiv.innerText = `Fant ${data.adresser.length} resultater:`;
                     resultsDiv.classList.remove('hidden');
-                    
                     data.adresser.forEach(addr => {
                         const item = document.createElement('div');
-                        item.className = 'p-3 cursor-pointer border-b border-gray-100 hover:bg-blue-50 transition-colors text-sm last:border-none';
+                        item.className = 'p-3 cursor-pointer border-b border-gray-50 hover:bg-blue-50 transition-colors text-xs last:border-none';
                         item.innerHTML = `<span class="font-bold text-gray-800">${addr.adressetekst}</span> <span class="text-gray-500 ml-1">${addr.poststed}</span>`;
                         item.onclick = () => selectAddress(addr);
                         resultsDiv.appendChild(item);
                     });
                 } else {
-                    statusDiv.innerText = 'No addresses found.';
+                    statusDiv.innerText = 'Ingen adresser funnet.';
                     statusDiv.classList.add('text-red-500');
                 }
             } catch (error) {
-                console.error('Geonorge lookup error:', error);
-                statusDiv.innerText = 'Error connecting to Geonorge API.';
+                statusDiv.innerText = 'Tilkoblingsfeil.';
                 statusDiv.classList.add('text-red-500');
             }
         }
@@ -238,9 +363,38 @@
             const statusDiv = document.getElementById('lookup_status');
             const resultsDiv = document.getElementById('lookup_results');
             
-            statusDiv.innerText = `Selected: ${addr.adressetekst}, ${addr.poststed}`;
+            statusDiv.innerText = `Valgt: ${addr.adressetekst}`;
             statusDiv.classList.add('text-green-500');
             resultsDiv.classList.add('hidden');
+        }
+
+        // Sidebar detail view handler
+        function showHouseDetails(house) {
+            const aside = document.getElementById('detail_aside');
+            const placeholder = document.getElementById('aside_placeholder');
+            const content = document.getElementById('aside_content');
+            
+            placeholder.classList.add('hidden');
+            content.classList.remove('hidden');
+            
+            document.getElementById('aside_address').innerText = house.address;
+            document.getElementById('aside_description').innerHTML = house.description.replace(/\r\n/g, '<br>').replace(/\n/g, '<br>');
+            document.getElementById('aside_author').innerText = house.last_updated_by;
+            document.getElementById('aside_date').innerText = new Date(house.updated_at).toLocaleString('no-NO');
+            
+            const badge = document.getElementById('aside_badge');
+            const colors = {
+                'privat-bolig': 'bg-green-100 text-green-700',
+                'privat-bygård': 'bg-green-100 text-green-700',
+                'offentlig': 'bg-blue-100 text-blue-700',
+                'næring': 'bg-yellow-100 text-yellow-800',
+                'industri': 'bg-gray-100 text-gray-700',
+                'gård': 'bg-orange-100 text-orange-800',
+                'annet': 'bg-gray-100 text-gray-500'
+            };
+            badge.innerHTML = `<span class="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest ${colors[house.ownership_type] || 'bg-gray-100 text-gray-500'}">${house.ownership_type.replace('-', ' ')}</span>`;
+            
+            document.getElementById('aside_edit_btn').onclick = () => openEditModal(house.id);
         }
     </script>
 

@@ -48,21 +48,26 @@ fetch('/api/houses')
         allHouses = houses;
         // Iterate over the data and add markers to the cluster group
         houses.forEach(house => {
+            const marker = L.marker([house.latitude, house.longitude]);
+
+            // Handle marker click to show details in sidebar
+            marker.on('click', () => {
+                showHouseDetails(house);
+            });
+
+            // Keep popup as a fallback/quick-view if desired, or remove it
             const formattedDescription = house.description.replace(/\r\n/g, '<br>').replace(/\n/g, '<br>');
             const popupContent = `
-                <b>${house.address}</b><br>
-                <span class="badge badge-${house.ownership_type}">${house.ownership_type}</span><br>
-                ${formattedDescription}<br>
-                <div style="margin-top: 10px; font-size: 0.9em; color: #666;">
-                    Last updated by: ${house.last_updated_by}<br>
-                    Date: ${new Date(house.updated_at).toLocaleString()}
+                <div class="p-1">
+                    <b class="text-gray-900">${house.address}</b><br>
+                    <span class="text-[10px] font-bold uppercase text-blue-600">${house.ownership_type.replace('-', ' ')}</span>
                 </div>
-                <hr>
-                <button class="btn btn-primary" style="padding: 4px 8px; font-size: 0.8em;" onclick="openEditModal(${house.id})">Edit this entry</button>
             `;
-            
-            const marker = L.marker([house.lat, house.lng])
-                .bindPopup(popupContent);
+            marker.bindPopup(popupContent);
+
+            markers.addLayer(marker);
+        });
+
             
             markers.addLayer(marker);
         });
