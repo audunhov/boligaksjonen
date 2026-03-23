@@ -105,11 +105,11 @@ document.addEventListener('DOMContentLoaded', () => {
             text.className = 'text-[9px] font-black uppercase tracking-widest mt-1 text-red-500';
         } else if (entropy < 40) {
             bar.className = 'h-full bg-orange-500 transition-all duration-500';
-            text.innerText = 'Svakt (trenger 40)';
+            text.innerText = 'Svakt';
             text.className = 'text-[9px] font-black uppercase tracking-widest mt-1 text-orange-500';
         } else if (entropy < 60) {
             bar.className = 'h-full bg-yellow-500 transition-all duration-500';
-            text.innerText = 'Middels (ok)';
+            text.innerText = 'Middels';
             text.className = 'text-[9px] font-black uppercase tracking-widest mt-1 text-yellow-500';
         } else if (entropy < 100) {
             bar.className = 'h-full bg-green-500 transition-all duration-500';
