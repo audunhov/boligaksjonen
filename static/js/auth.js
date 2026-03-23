@@ -30,19 +30,16 @@
         if (bar) bar.style.width = percent + '%';
         
         if (text && bar) {
-            if (entropy < 28) {
+            if (entropy < 40) {
                 bar.className = 'h-full bg-red-500 transition-all duration-500';
                 text.innerText = 'Veldig svakt';
                 text.className = 'text-[9px] font-black uppercase tracking-widest mt-1 text-red-500';
-            } else if (entropy < 40) {
-                bar.className = 'h-full bg-orange-500 transition-all duration-500';
-                text.innerText = 'Svakt';
-                text.className = 'text-[9px] font-black uppercase tracking-widest mt-1 text-orange-500';
             } else if (entropy < 60) {
                 bar.className = 'h-full bg-yellow-500 transition-all duration-500';
                 text.innerText = 'Middels';
                 text.className = 'text-[9px] font-black uppercase tracking-widest mt-1 text-yellow-500';
             } else if (entropy < 100) {
+
                 bar.className = 'h-full bg-green-500 transition-all duration-500';
                 text.innerText = 'Sterkt';
                 text.className = 'text-[9px] font-black uppercase tracking-widest mt-1 text-green-500';
