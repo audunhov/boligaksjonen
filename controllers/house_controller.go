@@ -159,7 +159,8 @@ func RemoveHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
-	id, _ := strconv.Atoi(r.URL.Query().Get("id"))
+	r.ParseForm()
+	id, _ := strconv.Atoi(r.FormValue("id"))
 	if id == 0 {
 		http.Error(w, "House ID required", http.StatusBadRequest)
 		return
@@ -181,7 +182,8 @@ func RestoreHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
-	id, _ := strconv.Atoi(r.URL.Query().Get("id"))
+	r.ParseForm()
+	id, _ := strconv.Atoi(r.FormValue("id"))
 	if id == 0 {
 		http.Error(w, "House ID required", http.StatusBadRequest)
 		return
