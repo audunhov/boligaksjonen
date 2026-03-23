@@ -1,188 +1,123 @@
 <!DOCTYPE html>
-<html lang="no">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tom Bolig - Vi synes ingen boliger burde stå tomme!</title>
+    <title>Tom Bolig - Bli med på dugnaden</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        :root {
-            --primary: #3498db;
-            --dark: #2c3e50;
-            --light: #ecf0f1;
-        }
-        body {
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            color: var(--dark);
-            background-color: #fff;
-            line-height: 1.6;
-        }
-        .container {
-            max-width: 1000px;
-            margin: 0 auto;
-            padding: 0 20px;
-        }
-        header {
-            padding: 20px 0;
-            border-bottom: 1px solid #eee;
-        }
-        .logo {
-            font-size: 1.5rem;
-            font-weight: bold;
-            color: var(--primary);
-            text-decoration: none;
-        }
-        .hero {
-            padding: 100px 0;
-            text-align: center;
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-        }
-        .hero h1 {
-            font-size: 3rem;
-            margin-bottom: 20px;
-            color: var(--dark);
-        }
-        .hero p {
-            font-size: 1.25rem;
-            max-width: 600px;
-            margin: 0 auto 40px;
-            color: #555;
-        }
-        .btn {
-            display: inline-block;
-            padding: 15px 35px;
-            background-color: var(--primary);
-            color: white;
-            text-decoration: none;
-            border-radius: 50px;
-            font-weight: bold;
-            font-size: 1.1rem;
-            transition: transform 0.2s, box-shadow 0.2s;
-            box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
-        }
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
-        }
-        .mission {
-            padding: 80px 0;
-        }
-        .mission h2 {
-            text-align: center;
-            margin-bottom: 40px;
-        }
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 40px;
-        }
-        .card {
-            padding: 30px;
-            background: #fff;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-            border-top: 4px solid var(--primary);
-        }
-        footer {
-            padding: 40px 0;
-            background: var(--dark);
-            color: white;
-            text-align: center;
-        }
+        dialog::backdrop { background: rgba(0,0,0,0.5); backdrop-filter: blur(2px); }
     </style>
 </head>
-<body>
-    <div class="container">
-        <header>
-            <a href="/" class="logo">Tom Bolig</a>
-            <div style="float: right;">
+<body class="bg-gray-50 text-gray-900 font-sans leading-normal tracking-normal">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <header class="flex justify-between items-center py-6 border-b border-gray-100">
+            <a href="/" class="text-2xl font-black text-blue-600 tracking-tight">Tom Bolig</a>
+            <div class="flex items-center gap-4">
                 {{if .UserID}}
-                    <a href="/logout" class="btn" style="padding: 10px 20px; font-size: 0.9rem;">Logg ut</a>
+                    <a href="/logout" class="px-5 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-bold rounded-full transition-all">Logg ut</a>
                 {{else}}
-                    <button class="btn" style="padding: 10px 20px; font-size: 0.9rem;" onclick="document.getElementById('loginDialog').showModal()">Logg inn</button>
-                    <button class="btn" style="padding: 10px 20px; font-size: 0.9rem;" onclick="document.getElementById('signupDialog').showModal()">Registrer</button>
+                    <button class="px-5 py-2.5 text-gray-600 hover:text-blue-600 text-sm font-bold rounded-full transition-all" onclick="document.getElementById('loginDialog').showModal()">Logg inn</button>
+                    <button class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold rounded-full shadow-sm transition-all" onclick="document.getElementById('signupDialog').showModal()">Registrer</button>
                 {{end}}
             </div>
         </header>
+
+        <main class="py-20 lg:py-32">
+            <div class="grid lg:grid-cols-2 gap-12 items-center">
+                <div>
+                    <h1 class="text-5xl lg:text-7xl font-black text-gray-900 leading-tight mb-6">
+                        Vi synes ingen boliger burde <span class="text-blue-600 underline decoration-blue-200">stå tomme!</span>
+                    </h1>
+                    <p class="text-xl text-gray-600 mb-10 leading-relaxed max-w-lg">
+                        Bli med på dugnaden for å kartlegge tomme boliger i ditt lokalsamfunn. Sammen kan vi skape mer liv i gatene våre og presse på for bedre boligpolitikk.
+                    </p>
+                    <div class="flex flex-col sm:flex-row gap-4">
+                        <a href="/kart" class="px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white text-lg font-bold rounded-xl shadow-lg shadow-blue-200 transition-all text-center">Utforsk kartet</a>
+                        <button onclick="document.getElementById('signupDialog').showModal()" class="px-8 py-4 bg-white border-2 border-gray-100 hover:border-blue-100 hover:bg-blue-50 text-gray-700 text-lg font-bold rounded-xl transition-all text-center">Bli med som bidragsyter</button>
+                    </div>
+                </div>
+                <div class="relative hidden lg:block">
+                    <div class="absolute -inset-4 bg-blue-100 rounded-3xl transform rotate-2"></div>
+                    <div class="relative bg-white p-8 rounded-3xl shadow-xl border border-gray-100">
+                        <div class="space-y-6">
+                            <div class="flex items-start gap-4">
+                                <div class="w-10 h-10 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center flex-shrink-0 font-bold">1</div>
+                                <div>
+                                    <h3 class="font-bold text-lg">Finn en tom bolig</h3>
+                                    <p class="text-gray-500">Ser du en leilighet eller et hus som har stått tomt lenge?</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start gap-4">
+                                <div class="w-10 h-10 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center flex-shrink-0 font-bold">2</div>
+                                <div>
+                                    <h3 class="font-bold text-lg">Marker den i kartet</h3>
+                                    <p class="text-gray-500">Legg inn adresse og en kort beskrivelse helt anonymt.</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start gap-4">
+                                <div class="w-10 h-10 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center flex-shrink-0 font-bold">3</div>
+                                <div>
+                                    <h3 class="font-bold text-lg">Skap endring</h3>
+                                    <p class="text-gray-500">Dine data hjelper oss å visualisere boligmangelen.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
     </div>
 
     <!-- Login Dialog -->
-    <dialog id="loginDialog" style="border: none; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); padding: 0; width: 90%; max-width: 400px;">
-        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #ddd; padding: 15px 20px; background: #f8f9fa;">
-            <h2 style="margin: 0; font-size: 1.25em;">Logg inn</h2>
-            <button style="background:none; border:none; color:#666; font-size:1.5em; cursor:pointer;" onclick="document.getElementById('loginDialog').close()">&times;</button>
+    {{$dialog_classes := "border-none rounded-2xl shadow-2xl p-0 w-[90%] max-w-md"}}
+    {{$input := "w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all"}}
+    
+    <dialog id="loginDialog" class="{{$dialog_classes}}">
+        <div class="p-8">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-black text-gray-900">Logg inn</h2>
+                <button class="text-gray-400 hover:text-gray-600 text-2xl" onclick="document.getElementById('loginDialog').close()">&times;</button>
+            </div>
+            <form action="/login" method="POST" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Brukernavn</label>
+                    <input type="text" name="username" required class="{{$input}}">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Passord</label>
+                    <input type="password" name="password" required class="{{$input}}">
+                </div>
+                <div class="pt-4 flex gap-3">
+                    <button type="button" class="flex-1 py-3 text-gray-500 font-bold hover:text-gray-700" onclick="document.getElementById('loginDialog').close()">Avbryt</button>
+                    <button type="submit" class="flex-1 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg shadow-blue-100 transition-all">Logg inn</button>
+                </div>
+            </form>
         </div>
-        <form action="/login" method="POST" style="padding: 20px;">
-            <div style="margin-bottom: 15px;">
-                <label style="display: block; font-weight: bold; margin-bottom: 5px;">Brukernavn</label>
-                <input type="text" name="username" required style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
-            </div>
-            <div style="margin-bottom: 15px;">
-                <label style="display: block; font-weight: bold; margin-bottom: 5px;">Passord</label>
-                <input type="password" name="password" required style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
-            </div>
-            <div style="text-align: right; margin-top: 20px;">
-                <button type="button" style="padding: 8px 16px; border: none; background: #95a5a6; color: white; border-radius: 4px; cursor: pointer; margin-right: 8px;" onclick="document.getElementById('loginDialog').close()">Avbryt</button>
-                <button type="submit" style="padding: 8px 16px; border: none; background: #3498db; color: white; border-radius: 4px; cursor: pointer;">Logg inn</button>
-            </div>
-        </form>
     </dialog>
 
     <!-- Signup Dialog -->
-    <dialog id="signupDialog" style="border: none; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); padding: 0; width: 90%; max-width: 400px;">
-        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #ddd; padding: 15px 20px; background: #f8f9fa;">
-            <h2 style="margin: 0; font-size: 1.25em;">Registrer</h2>
-            <button style="background:none; border:none; color:#666; font-size:1.5em; cursor:pointer;" onclick="document.getElementById('signupDialog').close()">&times;</button>
+    <dialog id="signupDialog" class="{{$dialog_classes}}">
+        <div class="p-8">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-black text-gray-900">Registrer</h2>
+                <button class="text-gray-400 hover:text-gray-600 text-2xl" onclick="document.getElementById('signupDialog').close()">&times;</button>
+            </div>
+            <form action="/signup" method="POST" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Brukernavn</label>
+                    <input type="text" name="username" required class="{{$input}}">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Passord</label>
+                    <input type="password" name="password" required class="{{$input}}">
+                </div>
+                <div class="pt-4 flex gap-3">
+                    <button type="button" class="flex-1 py-3 text-gray-500 font-bold hover:text-gray-700" onclick="document.getElementById('signupDialog').close()">Avbryt</button>
+                    <button type="submit" class="flex-1 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg shadow-blue-100 transition-all">Registrer</button>
+                </div>
+            </form>
         </div>
-        <form action="/signup" method="POST" style="padding: 20px;">
-            <div style="margin-bottom: 15px;">
-                <label style="display: block; font-weight: bold; margin-bottom: 5px;">Brukernavn</label>
-                <input type="text" name="username" required style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
-            </div>
-            <div style="margin-bottom: 15px;">
-                <label style="display: block; font-weight: bold; margin-bottom: 5px;">Passord</label>
-                <input type="password" name="password" required style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
-            </div>
-            <div style="text-align: right; margin-top: 20px;">
-                <button type="button" style="padding: 8px 16px; border: none; background: #95a5a6; color: white; border-radius: 4px; cursor: pointer; margin-right: 8px;" onclick="document.getElementById('signupDialog').close()">Avbryt</button>
-                <button type="submit" style="padding: 8px 16px; border: none; background: #3498db; color: white; border-radius: 4px; cursor: pointer;">Registrer</button>
-            </div>
-        </form>
     </dialog>
-
-    <section class="hero">
-        <div class="container">
-            <h1>Vi synes ingen boliger burde stå tomme!</h1>
-            <p>Bli med på dugnaden for å kartlegge tomme boliger i ditt lokalsamfunn. Sammen kan vi skape mer liv i gatene våre.</p>
-            <a href="/kart" class="btn">Utforsk kartet</a>
-        </div>
-    </section>
-
-    <section class="mission">
-        <div class="container">
-            <h2>Hvorfor gjør vi dette?</h2>
-            <div class="grid">
-                <div class="card">
-                    <h3>Synliggjøring</h3>
-                    <p>Mange boliger står tomme mens folk leter etter et sted å bo. Vi ønsker å vise omfanget av dette problemet.</p>
-                </div>
-                <div class="card">
-                    <h3>Folkeforskning</h3>
-                    <p>Dette er et wiki-prosjekt. Alle kan bidra med informasjon om boliger de vet står tomme.</p>
-                </div>
-                <div class="card">
-                    <h3>Lokalt engasjement</h3>
-                    <p>Ved å kartlegge tomme bygg kan vi starte en dialog om hvordan de kan tas i bruk igjen.</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <footer>
-        <div class="container">
-            <p>&copy; 2026 Tom Bolig - Et dugnadsprosjekt for levende nabolag.</p>
-        </div>
-    </footer>
 </body>
 </html>
