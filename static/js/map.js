@@ -3,7 +3,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // 1. Initialize Leaflet
     const map = L.map('map').setView([59.9139, 10.7522], 13);
     
-    // Define Base Layers
     const topo = L.tileLayer('https://cache.kartverket.no/v1/wmts/1.0.0/topo/default/webmercator/{z}/{y}/{x}.png', {
         maxZoom: 18,
         attribution: '&copy; <a href="http://www.kartverket.no/">Kartverket</a>'
@@ -14,10 +13,8 @@ document.addEventListener('DOMContentLoaded', () => {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
     });
 
-    // Set default layer
     topo.addTo(map);
 
-    // Add Layer Control
     const baseMaps = {
         "Kartverket": topo,
         "OpenStreetMap": detailed
@@ -38,17 +35,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const debouncedHeaderLookup = debounce((val) => window.lookupCoordinatesHeader(val));
     const debouncedModalLookup = debounce(() => window.lookupCoordinates());
-    
     window.debouncedHeaderLookup = debouncedHeaderLookup;
     window.debouncedModalLookup = debouncedModalLookup;
 
-    // Helper to build Kartverket URL
     function getKartverketUrl(h) {
         if (!h.knr || !h.gnr || !h.bnr) return null;
         return `https://eiendomsregisteret.kartverket.no/eiendom/${h.knr}/${h.gnr}/${h.bnr}/${h.fnr || 0}/${h.snr || 0}`;
     }
 
-    // Helper for Time Ago
     function timeAgo(date) {
         const seconds = Math.floor((new Date() - new Date(date)) / 1000);
         let interval = seconds / 31536000;
@@ -121,6 +115,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    window.closeAside = function() {
+        document.getElementById('detail_aside').classList.remove('is-open');
+    }
+
     window.lookupCoordinatesHeader = async function(address) {
         const resultsDiv = document.getElementById('header_lookup_results');
         if (!address) {
@@ -141,7 +139,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     item.className = 'p-4 cursor-pointer border-b border-gray-50 hover:bg-blue-50 transition-colors text-sm last:border-none flex justify-between items-center';
                     let actionText = existingHouse ? 'Vis' : 'Rapporter';
                     let actionColor = existingHouse ? 'text-green-600' : 'text-blue-600';
-                    item.innerHTML = `<div><span class="font-bold text-gray-900">${addr.adressetekst}</span><span class="text-gray-400 ml-2">${addr.poststed}</span></div><span class="text-[10px] font-black ${actionColor} uppercase tracking-widest">${actionText}</span>`;
+                    item.innerHTML = `<div><span class="font-bold text-gray-900 text-xs sm:text-sm">${addr.adressetekst}</span><span class="text-gray-400 ml-2 text-[10px] sm:text-xs">${addr.poststed}</span></div><span class="text-[10px] font-black ${actionColor} uppercase tracking-widest">${actionText}</span>`;
                     item.onclick = () => {
                         resultsDiv.classList.add('hidden');
                         if (existingHouse) {
@@ -218,10 +216,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     window.showHouseDetails = function(house) {
+        const aside = document.getElementById('detail_aside');
         const placeholder = document.getElementById('aside_placeholder');
         const content = document.getElementById('aside_content');
         if (placeholder) placeholder.classList.add('hidden');
         if (content) content.classList.remove('hidden');
+        
+        aside.classList.add('is-open');
+
         document.getElementById('aside_address').innerText = house.address;
         document.getElementById('aside_description').innerHTML = house.description.replace(/\r\n/g, '<br>').replace(/\n/g, '<br>');
         document.getElementById('aside_author').innerText = house.last_updated_by;
@@ -266,26 +268,23 @@ document.addEventListener('DOMContentLoaded', () => {
                 logs.forEach(log => {
                     const li = document.createElement('li');
                     li.className = 'relative flex gap-x-4';
-                    
                     const timeStr = timeAgo(log.timestamp);
                     const author = log.username || 'Anonym (' + log.anon_hash + ')';
                     const initial = author.charAt(0).toUpperCase();
 
                     if (log.action === 'comment') {
-                        // Card style for comments
                         li.innerHTML = `
                             <div class="absolute -bottom-6 left-0 top-0 flex w-6 justify-center"><div class="w-px bg-gray-200"></div></div>
                             <div class="relative mt-3 size-6 flex-none rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-[10px] uppercase outline outline-1 -outline-offset-1 outline-black/5">${initial}</div>
                             <div class="flex-auto rounded-md p-3 ring-1 ring-inset ring-gray-200 bg-white shadow-sm">
                                 <div class="flex justify-between gap-x-4">
-                                    <div class="py-0.5 text-xs/5 text-gray-500"><span class="font-medium text-gray-900">${author}</span> kommenterte</div>
+                                    <div class="py-0.5 text-xs/5 text-gray-500"><span class="font-medium text-gray-900">${author}</span></div>
                                     <time class="flex-none py-0.5 text-[10px] text-gray-400">${timeStr}</time>
                                 </div>
-                                <p class="text-sm/6 text-gray-600">${log.new_data}</p>
+                                <p class="text-xs sm:text-sm/6 text-gray-600">${log.new_data}</p>
                             </div>
                         `;
                     } else {
-                        // Simple style for system actions
                         let actionMsg = "";
                         switch(log.action) {
                             case 'add': actionMsg = "rapporterte boligen"; break;
@@ -312,23 +311,17 @@ document.addEventListener('DOMContentLoaded', () => {
         const houseID = document.getElementById('comment_house_id').value;
         const comment = document.getElementById('comment_text').value;
         if (!comment) return;
-
         const params = new URLSearchParams();
         params.append('house_id', houseID);
         params.append('comment', comment);
-
         fetch('/api/houses/comment', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded'
-            },
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
             body: params
         }).then(res => {
             if (res.ok) {
                 document.getElementById('comment_text').value = '';
                 window.refreshHistory(houseID);
-            } else {
-                console.error("Failed to post comment:", res.statusText);
             }
         });
     }
@@ -356,12 +349,29 @@ document.addEventListener('DOMContentLoaded', () => {
             allHouses = houses;
             houses.forEach(h => {
                 const m = L.marker([h.lat, h.lng]);
-                m.on('click', () => window.showHouseDetails(h));
-                m.bindPopup(`<b class="text-gray-900">${h.address}</b><br><span class="text-[10px] font-black uppercase text-blue-600">${h.ownership_type.replace('-', ' ')}</span>`);
+                m.on('click', () => {
+                    // Pre-fill sidebar but don't force open immediately on all clicks if popups are used
+                    window.showHouseDetails(h);
+                });
+                
+                const popupContent = `
+                    <div class="p-2 min-w-[150px]">
+                        <b class="text-sm text-gray-900 block mb-1">${h.address}</b>
+                        <button class="w-full mt-2 bg-blue-600 text-white text-[10px] font-black uppercase tracking-wider py-2 rounded-lg shadow-sm" onclick="window.showHouseDetailsById(${h.id})">
+                            Vis detaljer
+                        </button>
+                    </div>
+                `;
+                m.bindPopup(popupContent);
                 markers.addLayer(m);
             });
             map.addLayer(markers);
         });
+
+    window.showHouseDetailsById = function(id) {
+        const h = allHouses.find(house => house.id === id);
+        if (h) window.showHouseDetails(h);
+    }
 
     setTimeout(() => map.invalidateSize(), 100);
 });

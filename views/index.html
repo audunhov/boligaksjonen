@@ -2,7 +2,7 @@
 <html lang="en" class="h-full bg-white">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Tom Bolig - Kontrollpanel</title>
     
     <!-- Tailwind CSS & Elements -->
@@ -20,47 +20,74 @@
         dialog::backdrop { background: rgba(0,0,0,0.5); backdrop-filter: blur(2px); }
         .lookup-item:hover { background: #f8fafc; }
         
-        /* Floating Topbar Animation */
-        #floating-header {
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            transform: translateY(-10px);
-            opacity: 0.9;
+        /* Floating Topbar Animation (Desktop Only) */
+        @media (min-width: 768px) {
+            #floating-header {
+                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                transform: translateY(-10px);
+                opacity: 0.9;
+            }
+            #floating-header:hover {
+                transform: translateY(0);
+                opacity: 1;
+                box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+            }
         }
-        #floating-header:hover {
-            transform: translateY(0);
-            opacity: 1;
-            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+
+        /* Mobile Bottom Sheet Styles */
+        @media (max-width: 767px) {
+            #detail_aside {
+                width: 100% !important;
+                height: 70vh !important;
+                position: fixed !important;
+                bottom: 0 !important;
+                left: 0 !important;
+                right: 0 !important;
+                top: auto !important;
+                border-l-0 !important;
+                border-t border-gray-200 !important;
+                border-radius: 2rem 2.5rem 0 0 !important;
+                transform: translateY(100%) !important;
+                z-index: 2000 !important;
+                display: block !important;
+            }
+            #detail_aside.is-open {
+                transform: translateY(0) !important;
+            }
+            .sheet-handle {
+                width: 40px;
+                height: 4px;
+                background: #e5e7eb;
+                border-radius: 2px;
+                margin: 12px auto;
+            }
         }
     </style>
 </head>
 <body class="h-full overflow-hidden">
     <!-- Floating Header Container -->
-    <div class="fixed top-4 left-0 right-0 z-[1000] px-4 pointer-events-none">
-        <header id="floating-header" class="mx-auto max-w-5xl bg-white/95 backdrop-blur-md border border-gray-200 rounded-2xl shadow-lg flex h-16 shrink-0 items-center gap-x-4 px-4 sm:gap-x-6 sm:px-6 pointer-events-auto">
+    <div class="fixed top-4 left-0 right-0 z-[1000] px-2 sm:px-4 pointer-events-none">
+        <header id="floating-header" class="mx-auto max-w-5xl bg-white/95 backdrop-blur-md border border-gray-200 rounded-2xl shadow-lg flex h-14 sm:h-16 shrink-0 items-center gap-x-2 sm:gap-x-4 px-2 sm:px-6 pointer-events-auto overflow-hidden">
             <!-- Icon Link -->
-            <a href="/" class="flex h-10 w-10 shrink-0 items-center justify-center bg-blue-600 rounded-xl text-white font-black text-xs italic shadow-md shadow-blue-200 hover:bg-blue-700 transition-all active:scale-95" title="Gå til forsiden">
+            <a href="/" class="flex h-9 w-9 sm:h-10 sm:w-10 shrink-0 items-center justify-center bg-blue-600 rounded-xl text-white font-black text-xs italic shadow-md shadow-blue-200 hover:bg-blue-700 transition-all active:scale-95">
                 TB
             </a>
 
-            <!-- Separator -->
-            <div class="h-6 w-px bg-gray-200 ml-2"></div>
-
-            <div class="flex flex-1 gap-x-4 self-stretch lg:gap-x-6">
-                <!-- Search -->
-                <div class="flex flex-1 items-center">
-                    <div class="relative w-full max-w-md">
-                        <svg class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 size-4 text-gray-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 3.5a5.5 5.5 0 1 0 0 11 5.5 5.5 0 0 0 0-11ZM2 9a7 7 0 1 1 12.452 4.391l3.328 3.329a.75.75 0 1 1-1.06 1.06l-3.329-3.328A7 7 0 0 1 2 9Z" clip-rule="evenodd"/></svg>
-                        <input type="search" placeholder="Søk etter adresse..." class="block w-full rounded-xl border-0 py-1.5 pl-9 pr-3 text-gray-900 ring-1 ring-inset ring-gray-200 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm bg-gray-50/50" oninput="if(this.value === '') { document.getElementById('header_lookup_results').classList.add('hidden'); } else { debouncedHeaderLookup(this.value); }">
-                        <div id="header_lookup_results" class="absolute top-full mt-2 left-0 w-full bg-white rounded-xl shadow-2xl border border-gray-100 hidden z-[1001] max-h-96 overflow-y-auto"></div>
-                    </div>
+            <div class="flex flex-1 gap-x-2 sm:gap-x-4 self-stretch items-center min-w-0">
+                <!-- Search (Compacts on mobile) -->
+                <div class="flex-1 relative min-w-0">
+                    <svg class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 size-4 text-gray-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 3.5a5.5 5.5 0 1 0 0 11 5.5 5.5 0 0 0 0-11ZM2 9a7 7 0 1 1 12.452 4.391l3.328 3.329a.75.75 0 1 1-1.06 1.06l-3.329-3.328A7 7 0 0 1 2 9Z" clip-rule="evenodd"/></svg>
+                    <input type="search" placeholder="Søk..." class="block w-full rounded-xl border-0 py-1.5 pl-9 pr-3 text-gray-900 ring-1 ring-inset ring-gray-200 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 text-xs sm:text-sm bg-gray-50/50" oninput="if(this.value === '') { document.getElementById('header_lookup_results').classList.add('hidden'); } else { debouncedHeaderLookup(this.value); }">
+                    <div id="header_lookup_results" class="absolute top-full mt-2 left-0 w-[280px] sm:w-full bg-white rounded-xl shadow-2xl border border-gray-100 hidden z-[1001] max-h-[60vh] overflow-y-auto"></div>
                 </div>
 
-                <div class="flex items-center gap-x-2 lg:gap-x-4">
-                    <nav class="hidden md:flex items-center gap-1">
-                        <a href="/kart/historikk" class="px-3 py-2 text-sm font-bold text-gray-500 hover:text-blue-600 rounded-lg hover:bg-blue-50 transition-all">Historikk</a>
-                    </nav>
+                <!-- Action Buttons (Some hide on very small screens) -->
+                <div class="flex items-center gap-x-1 sm:gap-x-2 shrink-0">
+                    <a href="/kart/historikk" class="p-2 text-gray-500 hover:text-blue-600 rounded-lg hover:bg-blue-50 transition-all" title="Historikk">
+                        <svg class="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/></svg>
+                    </a>
 
-                    <button type="button" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-black uppercase tracking-wider rounded-xl shadow-lg shadow-blue-100 transition-all whitespace-nowrap" onclick="openAddModal()">
+                    <button type="button" class="hidden sm:block px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-black uppercase tracking-wider rounded-xl shadow-lg shadow-blue-100 transition-all whitespace-nowrap" onclick="openAddModal()">
                         Rapporter
                     </button>
 
@@ -71,19 +98,16 @@
                         <el-dropdown class="relative">
                             <button class="flex items-center p-1 rounded-full hover:bg-gray-50 transition-all">
                                 <div class="w-8 h-8 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-xs uppercase">{{slice .Username 0 1}}</div>
-                                <span class="hidden lg:flex lg:items-center ml-2">
-                                    <span class="text-xs font-black text-gray-900 uppercase tracking-tighter">{{.Username}}</span>
-                                </span>
                             </button>
                             <el-menu anchor="bottom end" popover class="w-48 mt-2 origin-top-right rounded-xl bg-white p-1 shadow-2xl ring-1 ring-black/5 focus:outline-none transition-all">
                                 <a href="/logout" class="block px-3 py-2 text-sm font-medium text-red-600 rounded-lg hover:bg-red-50">Logg ut</a>
                             </el-menu>
                         </el-dropdown>
                     {{else}}
-                        <div class="flex items-center gap-1">
-                            <button class="text-xs font-bold text-gray-900 hover:text-blue-600 px-3 py-2" onclick="document.getElementById('loginDialog').showModal()">Logg inn</button>
-                            <button class="bg-gray-900 text-white text-xs font-black uppercase px-4 py-2 rounded-xl hover:bg-gray-800 transition-all" onclick="document.getElementById('signupDialog').showModal()">Bli med</button>
-                        </div>
+                        <button class="bg-gray-900 text-white p-2 sm:px-4 sm:py-2 rounded-xl hover:bg-gray-800 transition-all" onclick="document.getElementById('loginDialog').showModal()">
+                            <svg class="size-5 sm:hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"/></svg>
+                            <span class="hidden sm:inline text-xs font-black uppercase">Bli med</span>
+                        </button>
                     {{end}}
                 </div>
             </div>
@@ -96,9 +120,12 @@
             <div id="map"></div>
         </main>
 
-        <!-- Detail Sidebar (Aside) -->
+        <!-- Detail Sidebar / Bottom Sheet -->
         <aside id="detail_aside" class="w-96 border-l border-gray-200 bg-white overflow-y-auto hidden lg:block transition-all duration-300 translate-x-full absolute right-0 top-0 bottom-0 z-20 xl:relative xl:translate-x-0">
-            <div class="p-8">
+            <div class="md:hidden sheet-handle"></div>
+            <button class="md:hidden absolute right-6 top-4 text-gray-400 text-2xl" onclick="window.closeAside()">&times;</button>
+            
+            <div class="p-6 sm:p-8">
                 <div id="aside_placeholder" class="text-center py-20">
                     <div class="w-16 h-16 bg-gray-50 rounded-2xl flex items-center justify-center mx-auto mb-4 text-gray-300 border border-gray-100 shadow-sm">
                         <svg class="size-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/><path d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z"/></svg>
@@ -162,19 +189,18 @@
         </aside>
     </div>
 
-    <!-- Modals (Styling matched to floating theme) -->
-    {{$dialog_classes := "border-none rounded-3xl shadow-2xl p-0 w-[90%] max-w-md overflow-hidden"}}
-    {{$header_classes := "flex justify-between items-center px-10 py-8 bg-gray-50 border-b border-gray-100"}}
-    {{$input := "w-full px-4 py-3.5 bg-white border border-gray-200 rounded-2xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all placeholder:text-gray-400 text-sm"}}
+    <!-- Modals (Simplified for Mobile) -->
+    {{$dialog_classes := "border-none rounded-3xl shadow-2xl p-0 w-[95%] sm:w-[90%] max-w-md overflow-hidden backdrop:backdrop-blur-md"}}
+    {{$header_classes := "flex justify-between items-center px-6 sm:px-10 py-6 sm:py-8 bg-gray-50 border-b border-gray-100"}}
+    {{$input := "w-full px-4 py-3 bg-white border border-gray-200 rounded-2xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all placeholder:text-gray-400 text-sm"}}
     {{$label := "block text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-2 leading-none ml-1"}}
 
-    <!-- Report/Edit Dialog -->
-    <dialog id="editDialog" class="border-none rounded-[2.5rem] shadow-2xl p-0 w-[95%] max-w-lg overflow-hidden backdrop:backdrop-blur-md">
+    <dialog id="editDialog" class="{{$dialog_classes}}">
         <div class="{{$header_classes}}">
-            <h2 id="dialog_title" class="text-2xl font-black text-gray-900 tracking-tight">Rapporter tom bolig</h2>
-            <button class="text-gray-300 hover:text-gray-900 text-3xl transition-colors" onclick="document.getElementById('editDialog').close()">&times;</button>
+            <h2 id="dialog_title" class="text-xl sm:text-2xl font-black text-gray-900 tracking-tight">Rapporter</h2>
+            <button class="text-gray-300 hover:text-gray-900 text-3xl" onclick="document.getElementById('editDialog').close()">&times;</button>
         </div>
-        <form id="editForm" action="/houses/update" method="POST" class="max-h-[70vh] overflow-y-auto p-10 space-y-8 bg-white">
+        <form id="editForm" action="/houses/update" method="POST" class="max-h-[70vh] overflow-y-auto p-6 sm:p-10 space-y-6 sm:space-y-8 bg-white">
             <input type="hidden" id="edit_id" name="id">
             <input type="hidden" id="edit_knr" name="knr">
             <input type="hidden" id="edit_gnr" name="gnr">
@@ -185,27 +211,19 @@
             <div>
                 <label class="{{$label}}">Adresse</label>
                 <input type="text" id="edit_address" name="address" required class="{{$input}}" placeholder="f.eks. Storgata 10, Oslo" oninput="debouncedModalLookup()">
-                <div id="lookup_status" class="text-[10px] mt-2 font-black uppercase tracking-tight text-gray-400 px-1"></div>
+                <div id="lookup_status" class="text-[10px] mt-2 font-black uppercase text-gray-400"></div>
                 <div id="lookup_results" class="border border-gray-100 rounded-2xl mt-3 hidden bg-white shadow-xl overflow-hidden divide-y divide-gray-50"></div>
             </div>
 
-            <div class="grid grid-cols-2 gap-6">
-                <div>
-                    <label class="{{$label}}">Breddegrad</label>
-                    <input type="number" step="any" id="edit_lat" name="lat" required readonly class="{{$input}} bg-gray-50/50 text-gray-400 cursor-not-allowed">
-                </div>
-                <div>
-                    <label class="{{$label}}">Lengdegrad</label>
-                    <input type="number" step="any" id="edit_lng" name="lng" required readonly class="{{$input}} bg-gray-50/50 text-gray-400 cursor-not-allowed">
-                </div>
+            <div class="grid grid-cols-2 gap-4 sm:gap-6">
+                <div><label class="{{$label}}">Lat</label><input type="number" step="any" id="edit_lat" name="lat" required readonly class="{{$input}} bg-gray-50/50 text-gray-400 cursor-not-allowed"></div>
+                <div><label class="{{$label}}">Lng</label><input type="number" step="any" id="edit_lng" name="lng" required readonly class="{{$input}} bg-gray-50/50 text-gray-400 cursor-not-allowed"></div>
             </div>
 
             <div>
                 <div class="flex justify-between items-end mb-2 px-1">
-                    <label class="{{$label}} mb-0">Kategori / Eieform</label>
-                    <a id="kartverket_link" href="#" target="_blank" class="text-[10px] font-black uppercase tracking-tighter text-blue-600 hover:text-blue-800 hidden flex items-center gap-1">
-                        Matrikkelen →
-                    </a>
+                    <label class="{{$label}} mb-0">Kategori</label>
+                    <a id="kartverket_link" href="#" target="_blank" class="text-[10px] font-black uppercase text-blue-600 hidden flex items-center gap-1">Matrikkelen →</a>
                 </div>
                 <select id="edit_ownership_type" name="ownership_type" onchange="toggleFreetext(this.value)" class="{{$input}} appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20fill%3D%22none%22%20viewBox%3D%220%200%2020%2020%22%3E%3Cpath%20stroke%3D%22%236b7280%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20stroke-width%3D%221.5%22%20d%3D%22m6%208%204%204%204-4%22%2F%3E%3C%2Fsvg%3E')] bg-[length:1.25rem_1.25rem] bg-[right_1rem_center] bg-no-repeat pr-10">
                     <option value="privat-bolig">Privat bolig</option>
@@ -215,7 +233,7 @@
                     <option value="industri">Industri/Lager</option>
                     <option value="gård">Gård/Småbruk</option>
                     <option value="annet">Vet ikke</option>
-                    <option value="freetext">Spesifiser annen...</option>
+                    <option value="freetext">Annet...</option>
                 </select>
             </div>
 
@@ -226,52 +244,51 @@
 
             <div>
                 <label class="{{$label}}">Beskrivelse</label>
-                <textarea id="edit_description" name="description" required class="{{$input}} h-32 resize-none" placeholder="Hvorfor tror du boligen er tom?"></textarea>
+                <textarea id="edit_description" name="description" required class="{{$input}} h-24 sm:h-32 resize-none" placeholder="Hvorfor tror du boligen er tom?"></textarea>
             </div>
 
-            <div class="flex gap-4 pt-4 pb-2">
-                <button type="button" class="flex-1 py-4 text-gray-400 font-bold hover:text-gray-900 transition-colors" onclick="document.getElementById('editDialog').close()">Avbryt</button>
-                <button type="submit" class="flex-1 py-4 bg-blue-600 hover:bg-blue-700 text-white font-black uppercase tracking-widest text-xs rounded-2xl shadow-xl shadow-blue-100 transition-all scale-100 active:scale-95">Lagre</button>
+            <div class="flex gap-3 sm:gap-4 pt-2 sm:pt-4">
+                <button type="button" class="flex-1 py-3 text-gray-400 font-bold sm:text-lg" onclick="document.getElementById('editDialog').close()">Avbryt</button>
+                <button type="submit" class="flex-1 py-3 bg-blue-600 hover:bg-blue-700 text-white font-black uppercase tracking-widest text-[10px] sm:text-xs rounded-2xl shadow-xl shadow-blue-100 transition-all">Lagre</button>
             </div>
         </form>
     </dialog>
 
-    <!-- Auth Dialogs -->
-    <dialog id="loginDialog" class="{{$dialog_classes}} backdrop:backdrop-blur-md">
-        <div class="p-12">
-            <div class="flex justify-between items-center mb-10">
-                <h2 class="text-3xl font-black text-gray-900 tracking-tight">Logg inn</h2>
+    <!-- Auth Dialogs (Re-used classes) -->
+    <dialog id="loginDialog" class="{{$dialog_classes}}">
+        <div class="p-8 sm:p-12">
+            <div class="flex justify-between items-center mb-8 sm:mb-10">
+                <h2 class="text-2xl sm:text-3xl font-black text-gray-900 tracking-tight">Logg inn</h2>
                 <button class="text-gray-300 hover:text-gray-900 text-2xl" onclick="document.getElementById('loginDialog').close()">&times;</button>
             </div>
-            <form action="/login" method="POST" class="space-y-6">
+            <form action="/login" method="POST" class="space-y-4 sm:space-y-6">
                 <div><label class="{{$label}}">Brukernavn</label><input type="text" name="username" required class="{{$input}}"></div>
                 <div><label class="{{$label}}">Passord</label><input type="password" name="password" required class="{{$input}}"></div>
-                <div class="pt-6 flex gap-4">
-                    <button type="button" class="flex-1 py-4 text-gray-400 font-bold" onclick="document.getElementById('loginDialog').close()">Avbryt</button>
-                    <button type="submit" class="flex-1 py-4 bg-blue-600 hover:bg-blue-700 text-white font-black uppercase tracking-widest text-xs rounded-2xl shadow-xl shadow-blue-100 transition-all">Logg inn</button>
+                <div class="pt-4 sm:pt-6 flex gap-3 sm:gap-4">
+                    <button type="button" class="flex-1 py-3 text-gray-400 font-bold" onclick="document.getElementById('loginDialog').close()">Avbryt</button>
+                    <button type="submit" class="flex-1 py-3 bg-blue-600 hover:bg-blue-700 text-white font-black uppercase text-[10px] sm:text-xs rounded-2xl shadow-xl">Logg inn</button>
                 </div>
             </form>
         </div>
     </dialog>
 
-    <dialog id="signupDialog" class="{{$dialog_classes}} backdrop:backdrop-blur-md">
-        <div class="p-12">
-            <div class="flex justify-between items-center mb-10">
-                <h2 class="text-3xl font-black text-gray-900 tracking-tight">Registrer</h2>
+    <dialog id="signupDialog" class="{{$dialog_classes}}">
+        <div class="p-8 sm:p-12">
+            <div class="flex justify-between items-center mb-8 sm:mb-10">
+                <h2 class="text-2xl sm:text-3xl font-black text-gray-900 tracking-tight">Bli med</h2>
                 <button class="text-gray-300 hover:text-gray-900 text-2xl" onclick="document.getElementById('signupDialog').close()">&times;</button>
             </div>
-            <form action="/signup" method="POST" class="space-y-6">
+            <form action="/signup" method="POST" class="space-y-4 sm:space-y-6">
                 <div><label class="{{$label}}">Brukernavn</label><input type="text" name="username" required class="{{$input}}"></div>
                 <div><label class="{{$label}}">Passord</label><input type="password" name="password" required class="{{$input}}"></div>
-                <div class="pt-6 flex gap-4">
-                    <button type="button" class="flex-1 py-4 text-gray-400 font-bold" onclick="document.getElementById('signupDialog').close()">Avbryt</button>
-                    <button type="submit" class="flex-1 py-4 bg-blue-600 hover:bg-blue-700 text-white font-black uppercase tracking-widest text-xs rounded-2xl shadow-xl shadow-blue-100 transition-all">Bli med</button>
+                <div class="pt-4 sm:pt-6 flex gap-3 sm:gap-4">
+                    <button type="button" class="flex-1 py-3 text-gray-400 font-bold" onclick="document.getElementById('signupDialog').close()">Avbryt</button>
+                    <button type="submit" class="flex-1 py-3 bg-blue-600 hover:bg-blue-700 text-white font-black uppercase text-[10px] sm:text-xs rounded-2xl shadow-xl">Start her</button>
                 </div>
             </form>
         </div>
     </dialog>
 
-    <!-- Scripts -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
     <script src="/static/js/map.js"></script>
