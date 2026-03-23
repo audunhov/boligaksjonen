@@ -201,11 +201,11 @@
     {{$label := "block text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-2 leading-none ml-1"}}
 
     <dialog id="editDialog" class="{{$dialog_classes}}">
-        <div class="{{$header_classes}}">
+        <div class="flex justify-between items-center px-6 sm:px-10 py-4 sm:py-6 bg-gray-50 border-b border-gray-100">
             <h2 id="dialog_title" class="text-xl sm:text-2xl font-black text-gray-900 tracking-tight">Rapporter</h2>
             <button class="text-gray-300 hover:text-gray-900 text-3xl" onclick="document.getElementById('editDialog').close()">&times;</button>
         </div>
-        <form id="editForm" action="/houses/update" method="POST" class="max-h-[70vh] overflow-y-auto p-6 sm:p-10 space-y-6 sm:space-y-8 bg-white">
+        <form id="editForm" action="/houses/update" method="POST" class="max-h-[75vh] overflow-y-auto p-6 sm:p-10 space-y-4 sm:space-y-6 bg-white">
             <input type="hidden" id="edit_id" name="id">
             <input type="hidden" id="edit_knr" name="knr">
             <input type="hidden" id="edit_gnr" name="gnr">
