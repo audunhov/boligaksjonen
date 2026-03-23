@@ -284,12 +284,23 @@
                 <h2 class="text-2xl sm:text-3xl font-black text-gray-900 tracking-tight">Bli med</h2>
                 <button class="text-gray-300 hover:text-gray-900 text-2xl" onclick="document.getElementById('signupDialog').close()">&times;</button>
             </div>
-            <form action="/signup" method="POST" class="space-y-4 sm:space-y-6">
+            <form id="signupForm" action="/signup" method="POST" class="space-y-4 sm:space-y-6" onsubmit="return window.validateSignup(event)">
                 <div><label class="{{$label}}">Brukernavn</label><input type="text" name="username" required class="{{$input}}"></div>
-                <div><label class="{{$label}}">Passord</label><input type="password" name="password" required class="{{$input}}"></div>
+                <div>
+                    <label class="{{$label}}">Passord</label>
+                    <input type="password" id="signup_password" name="password" required class="{{$input}}" oninput="window.checkPasswordStrength(this.value)">
+                    <div id="password_strength" class="mt-2 h-1 w-full bg-gray-100 rounded-full overflow-hidden">
+                        <div id="strength_bar" class="h-full w-0 transition-all duration-500"></div>
+                    </div>
+                    <p id="strength_text" class="text-[9px] font-black uppercase tracking-widest mt-1 text-gray-400">Skriv inn passord</p>
+                </div>
+                <div>
+                    <label class="{{$label}}">Bekreft passord</label>
+                    <input type="password" id="signup_confirm" name="confirm_password" required class="{{$input}}">
+                </div>
                 <div class="pt-4 sm:pt-6 flex gap-3 sm:gap-4">
                     <button type="button" class="flex-1 py-3 text-gray-400 font-bold" onclick="document.getElementById('signupDialog').close()">Avbryt</button>
-                    <button type="submit" class="flex-1 py-3 bg-blue-600 hover:bg-blue-700 text-white font-black uppercase text-[10px] sm:text-xs rounded-2xl shadow-xl">Start her</button>
+                    <button type="submit" id="signup_submit" class="flex-1 py-3 bg-gray-200 cursor-not-allowed text-white font-black uppercase text-[10px] sm:text-xs rounded-2xl shadow-xl transition-all" disabled>Start her</button>
                 </div>
             </form>
         </div>
