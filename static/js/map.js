@@ -333,6 +333,7 @@ document.addEventListener('DOMContentLoaded', () => {
             houses.forEach(h => {
                 const m = L.marker([h.lat, h.lng]);
                 m.on('click', () => {
+                    map.flyTo([h.lat, h.lng], 17);
                     window.showHouseDetails(h);
                 });
                 markers.addLayer(m);
