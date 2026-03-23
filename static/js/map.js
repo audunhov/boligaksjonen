@@ -3,20 +3,15 @@ document.addEventListener('DOMContentLoaded', () => {
     // 1. Initialize Leaflet
     const map = L.map('map').setView([59.9139, 10.7522], 13);
     
-    // Define Kartverket Base Layers
+    // Define Base Layers
     const topo = L.tileLayer('https://cache.kartverket.no/v1/wmts/1.0.0/topo/default/webmercator/{z}/{y}/{x}.png', {
         maxZoom: 19,
         attribution: '&copy; <a href="http://www.kartverket.no/">Kartverket</a>'
     });
 
-    const gray = L.tileLayer('https://cache.kartverket.no/v1/wmts/1.0.0/topograatone/default/webmercator/{z}/{y}/{x}.png', {
+    const detailed = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19,
-        attribution: '&copy; <a href="http://www.kartverket.no/">Kartverket</a>'
-    });
-
-    const aerial = L.tileLayer('https://cache.kartverket.no/v1/wmts/1.0.0/nib/default/webmercator/{z}/{y}/{x}.png', {
-        maxZoom: 19,
-        attribution: '&copy; <a href="http://www.kartverket.no/">Kartverket</a>'
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
     });
 
     // Set default layer
@@ -25,8 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Add Layer Control
     const baseMaps = {
         "Topografisk": topo,
-        "Gråtone": gray,
-        "Flyfoto": aerial
+        "Detaljert (OSM)": detailed
     };
     L.control.layers(baseMaps, null, { position: 'bottomleft' }).addTo(map);
 
