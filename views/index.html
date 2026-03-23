@@ -81,7 +81,7 @@
                 <div class="flex flex-1 items-center">
                     <div class="relative w-full max-w-lg">
                         <svg class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 size-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 3.5a5.5 5.5 0 1 0 0 11 5.5 5.5 0 0 0 0-11ZM2 9a7 7 0 1 1 12.452 4.391l3.328 3.329a.75.75 0 1 1-1.06 1.06l-3.329-3.328A7 7 0 0 1 2 9Z" clip-rule="evenodd"/></svg>
-                        <input type="search" placeholder="Søk etter adresse for å rapportere..." class="block w-full rounded-full border-0 py-1.5 pl-10 pr-3 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm" onkeydown="if(event.key === 'Enter') lookupCoordinatesHeader(this.value)">
+                        <input type="search" placeholder="Søk etter adresse for å rapportere..." class="block w-full rounded-full border-0 py-1.5 pl-10 pr-3 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm" oninput="debouncedHeaderLookup(this.value)">
                     </div>
                     <div id="header_lookup_results" class="absolute top-14 left-8 right-8 lg:left-auto lg:w-[512px] bg-white rounded-xl shadow-2xl border border-gray-100 hidden z-[1001] max-h-96 overflow-y-auto"></div>
                 </div>
@@ -195,8 +195,7 @@
             <div>
                 <label class="{{$label}}">Adresse</label>
                 <div class="flex gap-2">
-                    <input type="text" id="edit_address" name="address" required class="{{$input}}" placeholder="f.eks. Storgata 10, Oslo">
-                    <button type="button" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-xl text-xs transition-all" onclick="lookupCoordinates()">Slå opp</button>
+                    <input type="text" id="edit_address" name="address" required class="{{$input}}" placeholder="f.eks. Storgata 10, Oslo" oninput="debouncedModalLookup()">
                 </div>
                 <div id="lookup_status" class="text-[10px] mt-1.5 font-bold uppercase tracking-tight text-gray-400"></div>
                 <div id="lookup_results" class="border border-gray-100 rounded-xl mt-2 hidden bg-white shadow-sm overflow-hidden"></div>

@@ -34,6 +34,21 @@ document.addEventListener('DOMContentLoaded', () => {
         return `https://eiendomsregisteret.kartverket.no/eiendom/${h.knr}/${h.gnr}/${h.bnr}/${h.fnr || 0}/${h.snr || 0}`;
     }
 
+    // Helper for debouncing
+    function debounce(func, timeout = 300) {
+        let timer;
+        return (...args) => {
+            clearTimeout(timer);
+            timer = setTimeout(() => { func.apply(this, args); }, timeout);
+        };
+    }
+
+    const debouncedHeaderLookup = debounce((val) => window.lookupCoordinatesHeader(val));
+    const debouncedModalLookup = debounce(() => window.lookupCoordinates());
+    
+    window.debouncedHeaderLookup = debouncedHeaderLookup;
+    window.debouncedModalLookup = debouncedModalLookup;
+
     // 2. Define global UI helpers
     window.openAddModal = function() {
         document.getElementById('editForm').reset();
