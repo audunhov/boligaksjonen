@@ -2,9 +2,11 @@
 document.addEventListener('DOMContentLoaded', () => {
     // 1. Initialize Leaflet
     const map = L.map('map').setView([59.9139, 10.7522], 13);
-    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    
+    // Use Kartverket Norgeskart Topo Layer
+    L.tileLayer('https://cache.kartverket.no/v1/wmts/1.0.0/topo/default/webmercator/{z}/{y}/{x}.png', {
         maxZoom: 19,
-        attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        attribution: '&copy; <a href="http://www.kartverket.no/">Kartverket</a>'
     }).addTo(map);
 
     const markers = L.markerClusterGroup();
