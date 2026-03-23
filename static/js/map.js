@@ -123,13 +123,34 @@ document.addEventListener('DOMContentLoaded', () => {
                 resultsDiv.classList.remove('hidden');
                 resultsDiv.innerHTML = '';
                 data.adresser.forEach(addr => {
+                    // Check if this address already exists in our database
+                    const existingHouse = allHouses.find(h => h.address === addr.adressetekst);
+                    
                     const item = document.createElement('div');
                     item.className = 'p-4 cursor-pointer border-b border-gray-50 hover:bg-blue-50 transition-colors text-sm last:border-none flex justify-between items-center';
-                    item.innerHTML = `<div><span class="font-bold text-gray-900">${addr.adressetekst}</span><span class="text-gray-400 ml-2">${addr.poststed}</span></div><span class="text-[10px] font-black text-blue-600 uppercase tracking-widest">Velg</span>`;
+                    
+                    let actionText = existingHouse ? 'Vis' : 'Rapporter';
+                    let actionColor = existingHouse ? 'text-green-600' : 'text-blue-600';
+
+                    item.innerHTML = `
+                        <div>
+                            <span class="font-bold text-gray-900">${addr.adressetekst}</span>
+                            <span class="text-gray-400 ml-2">${addr.poststed}</span>
+                        </div>
+                        <span class="text-[10px] font-black ${actionColor} uppercase tracking-widest">${actionText}</span>
+                    `;
+
                     item.onclick = () => {
                         resultsDiv.classList.add('hidden');
-                        window.openAddModal();
-                        window.selectAddress(addr);
+                        if (existingHouse) {
+                            // Just show existing house
+                            map.flyTo([existingHouse.lat, existingHouse.lng], 17);
+                            window.showHouseDetails(existingHouse);
+                        } else {
+                            // Open report modal for new house
+                            window.openAddModal();
+                            window.selectAddress(addr);
+                        }
                     };
                     resultsDiv.appendChild(item);
                 });
