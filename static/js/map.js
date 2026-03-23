@@ -24,7 +24,13 @@ fetch('/api/houses')
             const popupContent = `
                 <b>${house.address}</b><br>
                 <span class="badge badge-${house.ownership_type}">${house.ownership_type}</span><br>
-                ${house.description}
+                ${house.description}<br>
+                <div style="margin-top: 10px; font-size: 0.9em; color: #666;">
+                    Last updated by: ${house.last_updated_by}<br>
+                    Date: ${new Date(house.updated_at).toLocaleString()}
+                </div>
+                <hr>
+                <a href="/houses/edit?id=${house.id}">Edit this entry</a>
             `;
             
             const marker = L.marker([house.lat, house.lng])
