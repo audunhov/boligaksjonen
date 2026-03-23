@@ -41,6 +41,7 @@ func APIHousesHandler(w http.ResponseWriter, r *http.Request) {
 	houses := models.GetAllHouses()
 
 	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
 	if err := json.NewEncoder(w).Encode(houses); err != nil {
 		slog.Error("Failed to encode JSON", "error", err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
@@ -89,13 +90,27 @@ func UpdateHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := r.ParseForm(); err != nil {
+		slog.Error("Failed to parse form", "error", err)
 		http.Error(w, "Failed to parse form", http.StatusBadRequest)
 		return
 	}
 
-	id, _ := strconv.Atoi(r.FormValue("id"))
-	lat, _ := strconv.ParseFloat(r.FormValue("lat"), 64)
-	lng, _ := strconv.ParseFloat(r.FormValue("lng"), 64)
+	idStr := r.FormValue("id")
+	id, _ := strconv.Atoi(idStr) // id 0 means new house
+
+	lat, err := strconv.ParseFloat(r.FormValue("lat"), 64)
+	if err != nil {
+		slog.Error("Invalid latitude", "val", r.FormValue("lat"), "error", err)
+		http.Error(w, "Invalid latitude", http.StatusBadRequest)
+		return
+	}
+
+	lng, err := strconv.ParseFloat(r.FormValue("lng"), 64)
+	if err != nil {
+		slog.Error("Invalid longitude", "val", r.FormValue("lng"), "error", err)
+		http.Error(w, "Invalid longitude", http.StatusBadRequest)
+		return
+	}
 
 	ownershipType := r.FormValue("ownership_type")
 	if ownershipType == "freetext" {
@@ -107,7 +122,7 @@ func UpdateHandler(w http.ResponseWriter, r *http.Request) {
 		author = "Anonymous"
 	}
 
-	updatedHouse := models.House{
+	house := models.House{
 		ID:            id,
 		Address:       r.FormValue("address"),
 		Latitude:      lat,
@@ -118,10 +133,16 @@ func UpdateHandler(w http.ResponseWriter, r *http.Request) {
 		UpdatedAt:     time.Now(),
 	}
 
-	if err := models.UpdateHouse(updatedHouse); err != nil {
-		slog.Error("Failed to update house", "error", err)
-		http.Error(w, "Failed to update house", http.StatusInternalServerError)
-		return
+	if id == 0 {
+		slog.Info("Adding new house", "address", house.Address)
+		models.AddHouse(house)
+	} else {
+		slog.Info("Updating house", "id", id, "address", house.Address)
+		if err := models.UpdateHouse(house); err != nil {
+			slog.Error("Failed to update house in model", "id", id, "error", err)
+			http.Error(w, "Failed to update house: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
 	}
 
 	http.Redirect(w, r, "/", http.StatusSeeOther)

@@ -2,6 +2,7 @@ package models
 
 import (
 	"errors"
+	"fmt"
 	"sync"
 	"time"
 )
@@ -53,11 +54,35 @@ func GetHouseByID(id int) (House, error) {
 func UpdateHouse(updated House) error {
 	mu.Lock()
 	defer mu.Unlock()
+	fmt.Printf("Updating house %d: %s (%f, %f)\n", updated.ID, updated.Address, updated.Latitude, updated.Longitude)
 	for i, h := range houses {
 		if h.ID == updated.ID {
 			houses[i] = updated
 			return nil
 		}
 	}
+	fmt.Printf("ERROR: House %d not found in memory\n", updated.ID)
 	return errors.New("house not found")
+}
+
+// AddHouse adds a new house to the list.
+func AddHouse(newHouse House) int {
+	mu.Lock()
+	defer mu.Unlock()
+	
+	maxID := 0
+	for _, h := range houses {
+		if h.ID > maxID {
+			maxID = h.ID
+		}
+	}
+	
+	newHouse.ID = maxID + 1
+	if newHouse.UpdatedAt.IsZero() {
+		newHouse.UpdatedAt = time.Now()
+	}
+	
+	houses = append(houses, newHouse)
+	fmt.Printf("Added house %d: %s (%f, %f)\n", newHouse.ID, newHouse.Address, newHouse.Latitude, newHouse.Longitude)
+	return newHouse.ID
 }

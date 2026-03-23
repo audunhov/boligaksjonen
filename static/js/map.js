@@ -9,6 +9,32 @@ L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
 
 // Create a marker cluster group
 const markers = L.markerClusterGroup();
+let allHouses = []; // Store houses globally for modal access
+
+// Function to open the edit modal
+window.openEditModal = function(id) {
+    const house = allHouses.find(h => h.id === id);
+    if (!house) return;
+
+    document.getElementById('edit_id').value = house.id;
+    document.getElementById('edit_address').value = house.address;
+    document.getElementById('edit_lat').value = house.lat;
+    document.getElementById('edit_lng').value = house.lng;
+    document.getElementById('edit_description').value = house.description;
+    
+    const standardTypes = ['kommune', 'fylke', 'stat', 'privatperson', 'selskap'];
+    if (standardTypes.includes(house.ownership_type)) {
+        document.getElementById('edit_ownership_type').value = house.ownership_type;
+        document.getElementById('edit_freetext_group').style.display = 'none';
+        document.getElementById('edit_ownership_freetext').value = '';
+    } else {
+        document.getElementById('edit_ownership_type').value = 'freetext';
+        document.getElementById('edit_freetext_group').style.display = 'block';
+        document.getElementById('edit_ownership_freetext').value = house.ownership_type;
+    }
+
+    document.getElementById('editDialog').showModal();
+};
 
 // Fetch house data from the API
 fetch('/api/houses')
@@ -19,6 +45,7 @@ fetch('/api/houses')
         return response.json();
     })
     .then(houses => {
+        allHouses = houses;
         // Iterate over the data and add markers to the cluster group
         houses.forEach(house => {
             const popupContent = `
@@ -30,7 +57,7 @@ fetch('/api/houses')
                     Date: ${new Date(house.updated_at).toLocaleString()}
                 </div>
                 <hr>
-                <a href="/houses/edit?id=${house.id}">Edit this entry</a>
+                <button class="btn btn-primary" style="padding: 4px 8px; font-size: 0.8em;" onclick="openEditModal(${house.id})">Edit this entry</button>
             `;
             
             const marker = L.marker([house.lat, house.lng])
