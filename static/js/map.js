@@ -10,6 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
         position: 'bottomleft'
     }).addTo(map);
     
+    // Define Base Layers
     const topo = L.tileLayer('https://cache.kartverket.no/v1/wmts/1.0.0/topo/default/webmercator/{z}/{y}/{x}.png', {
         maxZoom: 18,
         attribution: '&copy; <a href="http://www.kartverket.no/">Kartverket</a>'
@@ -21,13 +22,12 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     topo.addTo(map);
-// Add Layer Control
-const baseMaps = {
-    "Kartverket": topo,
-    "OpenStreetMap": detailed
-};
-L.control.layers(baseMaps, null, { position: 'bottomright' }).addTo(map);
 
+    const baseMaps = {
+        "Kartverket": topo,
+        "OpenStreetMap": detailed
+    };
+    L.control.layers(baseMaps, null, { position: 'bottomright' }).addTo(map);
 
     const markers = L.markerClusterGroup();
     let allHouses = [];
@@ -45,11 +45,6 @@ L.control.layers(baseMaps, null, { position: 'bottomright' }).addTo(map);
     const debouncedModalLookup = debounce(() => window.lookupCoordinates());
     window.debouncedHeaderLookup = debouncedHeaderLookup;
     window.debouncedModalLookup = debouncedModalLookup;
-
-    function getKartverketUrl(h) {
-        if (!h.knr || !h.gnr || !h.bnr) return null;
-        return `https://eiendomsregisteret.kartverket.no/eiendom/${h.knr}/${h.gnr}/${h.bnr}/${h.fnr || 0}/${h.snr || 0}`;
-    }
 
     function timeAgo(date) {
         const seconds = Math.floor((new Date() - new Date(date)) / 1000);
@@ -73,7 +68,6 @@ L.control.layers(baseMaps, null, { position: 'bottomright' }).addTo(map);
         document.getElementById('dialog_title').innerText = "Rapporter tom bolig";
         document.getElementById('edit_freetext_group').classList.add('hidden');
         document.getElementById('lookup_status').innerText = '';
-        document.getElementById('kartverket_link').classList.add('hidden');
         document.getElementById('editDialog').showModal();
     }
 
@@ -86,21 +80,6 @@ L.control.layers(baseMaps, null, { position: 'bottomright' }).addTo(map);
         document.getElementById('edit_lat').value = house.lat;
         document.getElementById('edit_lng').value = house.lng;
         document.getElementById('edit_description').value = house.description;
-        
-        document.getElementById('edit_knr').value = house.knr || '';
-        document.getElementById('edit_gnr').value = house.gnr || 0;
-        document.getElementById('edit_bnr').value = house.bnr || 0;
-        document.getElementById('edit_fnr').value = house.fnr || 0;
-        document.getElementById('edit_snr').value = house.snr || 0;
-
-        const kvLink = document.getElementById('kartverket_link');
-        const url = getKartverketUrl(house);
-        if (url) {
-            kvLink.href = url;
-            kvLink.classList.remove('hidden');
-        } else {
-            kvLink.classList.add('hidden');
-        }
         
         const standardTypes = ['privat-bolig', 'privat-bygård', 'offentlig', 'næring', 'industri', 'gård', 'annet'];
         if (standardTypes.includes(house.ownership_type)) {
@@ -207,28 +186,12 @@ L.control.layers(baseMaps, null, { position: 'bottomright' }).addTo(map);
         document.getElementById('edit_lat').value = addr.representasjonspunkt.lat;
         document.getElementById('edit_lng').value = addr.representasjonspunkt.lon;
         
-        // Priority: Use first matrikkelenhet if available for accurate snr/fnr, 
-        // otherwise fallback to top-level fields.
-        const m = (addr.matrikkelenheter && addr.matrikkelenheter.length > 0) ? addr.matrikkelenheter[0] : addr;
-
-        document.getElementById('edit_knr').value = m.kommunenummer;
-        document.getElementById('edit_gnr').value = m.gardsnummer;
-        document.getElementById('edit_bnr').value = m.bruksnummer;
-        document.getElementById('edit_fnr').value = m.festenummer || 0;
-        document.getElementById('edit_snr').value = m.seksjonsnummer || 0;
-
         const statusDiv = document.getElementById('lookup_status');
         const resultsDiv = document.getElementById('lookup_results');
         statusDiv.innerText = `Valgt: ${addr.adressetekst}`;
         statusDiv.classList.add('text-green-500');
         resultsDiv.classList.add('hidden');
-
-        // Show direct Kartverket link using the detected matrikkel data
-        const kvLink = document.getElementById('kartverket_link');
-        const url = `https://eiendomsregisteret.kartverket.no/eiendom/${m.kommunenummer}/${m.gardsnummer}/${m.bruksnummer}/${m.festenummer || 0}/${m.seksjonsnummer || 0}`;
-        kvLink.href = url;
-        kvLink.classList.remove('hidden');
-
+        
         map.flyTo([addr.representasjonspunkt.lat, addr.representasjonspunkt.lon], 17);
     }
 
@@ -262,10 +225,6 @@ L.control.layers(baseMaps, null, { position: 'bottomright' }).addTo(map);
         };
         badge.innerHTML = `<span class="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest ${colors[type] || 'bg-gray-100 text-gray-500'}">${type.replace('-', ' ')}</span>`;
         document.getElementById('aside_edit_btn').onclick = () => window.openEditModal(house.id);
-        const kvUrl = getKartverketUrl(house);
-        if (kvUrl) {
-            badge.innerHTML += `<a href="${kvUrl}" target="_blank" class="ml-2 text-[10px] font-bold text-blue-600 hover:underline">Se i matrikkelen →</a>`;
-        }
 
         window.refreshHistory(house.id);
     }
@@ -374,7 +333,6 @@ L.control.layers(baseMaps, null, { position: 'bottomright' }).addTo(map);
             houses.forEach(h => {
                 const m = L.marker([h.lat, h.lng]);
                 m.on('click', () => {
-                    // Pre-fill sidebar but don't force open immediately on all clicks if popups are used
                     window.showHouseDetails(h);
                 });
                 

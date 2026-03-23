@@ -207,11 +207,6 @@
         </div>
         <form id="editForm" action="/houses/update" method="POST" class="max-h-[75vh] overflow-y-auto p-6 sm:p-10 space-y-4 sm:space-y-6 bg-white">
             <input type="hidden" id="edit_id" name="id">
-            <input type="hidden" id="edit_knr" name="knr">
-            <input type="hidden" id="edit_gnr" name="gnr">
-            <input type="hidden" id="edit_bnr" name="bnr">
-            <input type="hidden" id="edit_fnr" name="fnr">
-            <input type="hidden" id="edit_snr" name="snr">
             
             <div>
                 <label class="{{$label}}">Adresse</label>
@@ -223,15 +218,11 @@
             <div class="grid grid-cols-2 gap-4 sm:gap-6">
                 <div><label class="{{$label}}">Lat</label><input type="number" step="any" id="edit_lat" name="lat" required readonly class="{{$input}} bg-gray-50/50 text-gray-400 cursor-not-allowed"></div>
                 <div><label class="{{$label}}">Lng</label><input type="number" step="any" id="edit_lng" name="lng" required readonly class="{{$input}} bg-gray-50/50 text-gray-400 cursor-not-allowed"></div>
-            </div>
-
             <div>
-                <div class="flex justify-between items-end mb-2 px-1">
-                    <label class="{{$label}} mb-0">Kategori</label>
-                    <a id="kartverket_link" href="#" target="_blank" class="text-[10px] font-black uppercase text-blue-600 hidden flex items-center gap-1">Matrikkelen →</a>
-                </div>
+                <label class="{{$label}}">Kategori / Eieform</label>
                 <select id="edit_ownership_type" name="ownership_type" onchange="toggleFreetext(this.value)" class="{{$input}} appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20fill%3D%22none%22%20viewBox%3D%220%200%2020%2020%22%3E%3Cpath%20stroke%3D%22%236b7280%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20stroke-width%3D%221.5%22%20d%3D%22m6%208%204%204%204-4%22%2F%3E%3C%2Fsvg%3E')] bg-[length:1.25rem_1.25rem] bg-[right_1rem_center] bg-no-repeat pr-10">
                     <option value="privat-bolig">Privat bolig</option>
+
                     <option value="privat-bygård">Privat bygård/blokk</option>
                     <option value="offentlig">Offentlig bygg</option>
                     <option value="næring">Næring/Butikk</option>
