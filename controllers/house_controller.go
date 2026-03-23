@@ -131,6 +131,11 @@ func UpdateHandler(w http.ResponseWriter, r *http.Request) {
 		Description:   r.FormValue("description"),
 		OwnershipType: ownershipType,
 		LastUpdatedBy: author,
+		KommuneNr:     r.FormValue("knr"),
+		GardsNr:       parseInt(r.FormValue("gnr")),
+		BruksNr:       parseInt(r.FormValue("bnr")),
+		FesteNr:       parseInt(r.FormValue("fnr")),
+		SeksjonsNr:    parseInt(r.FormValue("snr")),
 	}
 
 	if id == 0 {

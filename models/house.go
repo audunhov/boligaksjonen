@@ -45,6 +45,12 @@ type House struct {
 	UpdatedAt     time.Time `json:"updated_at"`
 	UserID        *int      `json:"user_id,omitempty"`
 	AnonHash      string    `json:"anon_hash,omitempty"`
+	// Matrikkel fields for direct links
+	KommuneNr  string `json:"knr"`
+	GardsNr    int    `json:"gnr"`
+	BruksNr    int    `json:"bnr"`
+	FesteNr    int    `json:"fnr"`
+	SeksjonsNr int    `json:"snr"`
 }
 
 var db *sql.DB
@@ -80,6 +86,11 @@ func InitDB(filepath string) error {
 			updated_at DATETIME,
 			user_id INTEGER,
 			anon_hash TEXT,
+			knr TEXT,
+			gnr INTEGER,
+			bnr INTEGER,
+			fnr INTEGER,
+			snr INTEGER,
 			FOREIGN KEY (user_id) REFERENCES users(id)
 		);`,
 		`CREATE TABLE IF NOT EXISTS audit_log (
@@ -109,9 +120,9 @@ func InitDB(filepath string) error {
 	if err == nil && count == 0 {
 		slog.Info("Database is empty, seeding initial mock data")
 		seedData := []House{
-			{Address: "Oslogate 1", Latitude: 59.9079, Longitude: 10.7686, Description: "Tom bolig siden 2023", OwnershipType: "offentlig", LastUpdatedBy: "System", UpdatedAt: time.Now()},
-			{Address: "Trondheimsveien 5", Latitude: 59.9194, Longitude: 10.7645, Description: "Tomt lokale i 1. etasje", OwnershipType: "næring", LastUpdatedBy: "System", UpdatedAt: time.Now()},
-			{Address: "Thorvald Meyers gate 10", Latitude: 59.9234, Longitude: 10.7588, Description: "Oppusningsobjekt, ubebodd", OwnershipType: "privat-bolig", LastUpdatedBy: "System", UpdatedAt: time.Now()},
+			{Address: "Oslogate 1", Latitude: 59.9079, Longitude: 10.7686, Description: "Tom bolig siden 2023", OwnershipType: "offentlig", LastUpdatedBy: "System", UpdatedAt: time.Now(), KommuneNr: "0301", GardsNr: 232, BruksNr: 1},
+			{Address: "Trondheimsveien 5", Latitude: 59.9194, Longitude: 10.7645, Description: "Tomt lokale i 1. etasje", OwnershipType: "næring", LastUpdatedBy: "System", UpdatedAt: time.Now(), KommuneNr: "0301", GardsNr: 228, BruksNr: 1},
+			{Address: "Thorvald Meyers gate 10", Latitude: 59.9234, Longitude: 10.7588, Description: "Oppusningsobjekt, ubebodd", OwnershipType: "privat-bolig", LastUpdatedBy: "System", UpdatedAt: time.Now(), KommuneNr: "0301", GardsNr: 226, BruksNr: 1},
 		}
 		for _, h := range seedData {
 			AddHouse(h, nil, "SystemHash")
@@ -129,7 +140,7 @@ func GetAllHouses() []House {
 	}
 
 	rows, err := db.Query(`
-		SELECT id, address, latitude, longitude, description, ownership_type, last_updated_by, updated_at, user_id, anon_hash
+		SELECT id, address, latitude, longitude, description, ownership_type, last_updated_by, updated_at, user_id, anon_hash, IFNULL(knr, ''), IFNULL(gnr, 0), IFNULL(bnr, 0), IFNULL(fnr, 0), IFNULL(snr, 0)
 		FROM houses
 	`)
 	if err != nil {
@@ -140,7 +151,7 @@ func GetAllHouses() []House {
 
 	for rows.Next() {
 		var h House
-		if err := rows.Scan(&h.ID, &h.Address, &h.Latitude, &h.Longitude, &h.Description, &h.OwnershipType, &h.LastUpdatedBy, &h.UpdatedAt, &h.UserID, &h.AnonHash); err != nil {
+		if err := rows.Scan(&h.ID, &h.Address, &h.Latitude, &h.Longitude, &h.Description, &h.OwnershipType, &h.LastUpdatedBy, &h.UpdatedAt, &h.UserID, &h.AnonHash, &h.KommuneNr, &h.GardsNr, &h.BruksNr, &h.FesteNr, &h.SeksjonsNr); err != nil {
 			slog.Error("Failed to scan house row", "error", err)
 			continue
 		}
@@ -157,11 +168,11 @@ func GetHouseByID(id int) (House, error) {
 	}
 
 	query := `
-		SELECT id, address, latitude, longitude, description, ownership_type, last_updated_by, updated_at, user_id, anon_hash
+		SELECT id, address, latitude, longitude, description, ownership_type, last_updated_by, updated_at, user_id, anon_hash, IFNULL(knr, ''), IFNULL(gnr, 0), IFNULL(bnr, 0), IFNULL(fnr, 0), IFNULL(snr, 0)
 		FROM houses WHERE id = ?
 	`
 	row := db.QueryRow(query, id)
-	err := row.Scan(&h.ID, &h.Address, &h.Latitude, &h.Longitude, &h.Description, &h.OwnershipType, &h.LastUpdatedBy, &h.UpdatedAt, &h.UserID, &h.AnonHash)
+	err := row.Scan(&h.ID, &h.Address, &h.Latitude, &h.Longitude, &h.Description, &h.OwnershipType, &h.LastUpdatedBy, &h.UpdatedAt, &h.UserID, &h.AnonHash, &h.KommuneNr, &h.GardsNr, &h.BruksNr, &h.FesteNr, &h.SeksjonsNr)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return h, errors.New("house not found")
@@ -191,10 +202,10 @@ func UpdateHouse(updated House, userID *int, anonHash string) error {
 
 	query := `
 		UPDATE houses 
-		SET address = ?, latitude = ?, longitude = ?, description = ?, ownership_type = ?, last_updated_by = ?, updated_at = ?, user_id = ?, anon_hash = ?
+		SET address = ?, latitude = ?, longitude = ?, description = ?, ownership_type = ?, last_updated_by = ?, updated_at = ?, user_id = ?, anon_hash = ?, knr = ?, gnr = ?, bnr = ?, fnr = ?, snr = ?
 		WHERE id = ?
 	`
-	_, err = db.Exec(query, updated.Address, updated.Latitude, updated.Longitude, updated.Description, updated.OwnershipType, updated.LastUpdatedBy, updated.UpdatedAt, userID, anonHash, updated.ID)
+	_, err = db.Exec(query, updated.Address, updated.Latitude, updated.Longitude, updated.Description, updated.OwnershipType, updated.LastUpdatedBy, updated.UpdatedAt, userID, anonHash, updated.KommuneNr, updated.GardsNr, updated.BruksNr, updated.FesteNr, updated.SeksjonsNr, updated.ID)
 	if err != nil {
 		return fmt.Errorf("failed to update house: %w", err)
 	}
@@ -224,10 +235,10 @@ func AddHouse(newHouse House, userID *int, anonHash string) int {
 	}
 
 	query := `
-		INSERT INTO houses (address, latitude, longitude, description, ownership_type, last_updated_by, updated_at, user_id, anon_hash)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+		INSERT INTO houses (address, latitude, longitude, description, ownership_type, last_updated_by, updated_at, user_id, anon_hash, knr, gnr, bnr, fnr, snr)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 	`
-	result, err := db.Exec(query, newHouse.Address, newHouse.Latitude, newHouse.Longitude, newHouse.Description, newHouse.OwnershipType, newHouse.LastUpdatedBy, newHouse.UpdatedAt, userID, anonHash)
+	result, err := db.Exec(query, newHouse.Address, newHouse.Latitude, newHouse.Longitude, newHouse.Description, newHouse.OwnershipType, newHouse.LastUpdatedBy, newHouse.UpdatedAt, userID, anonHash, newHouse.KommuneNr, newHouse.GardsNr, newHouse.BruksNr, newHouse.FesteNr, newHouse.SeksjonsNr)
 	if err != nil {
 		slog.Error("Failed to insert house", "error", err)
 		return 0

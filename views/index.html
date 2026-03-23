@@ -186,6 +186,11 @@
         </div>
         <form id="editForm" action="/houses/update" method="POST" class="max-h-[75vh] overflow-y-auto p-8 space-y-6">
             <input type="hidden" id="edit_id" name="id">
+            <input type="hidden" id="edit_knr" name="knr">
+            <input type="hidden" id="edit_gnr" name="gnr">
+            <input type="hidden" id="edit_bnr" name="bnr">
+            <input type="hidden" id="edit_fnr" name="fnr">
+            <input type="hidden" id="edit_snr" name="snr">
             
             <div>
                 <label class="{{$label}}">Adresse</label>
@@ -209,7 +214,13 @@
             </div>
 
             <div>
-                <label class="{{$label}}">Kategori / Eieform</label>
+                <div class="flex justify-between items-end mb-2">
+                    <label class="{{$label}} mb-0">Kategori / Eieform</label>
+                    <a id="kartverket_link" href="https://seeiendom.kartverket.no/" target="_blank" class="text-[10px] font-bold text-blue-600 hover:text-blue-800 flex items-center gap-1 hidden">
+                        Slå opp eier (Krever BankID)
+                        <svg class="size-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" /></svg>
+                    </a>
+                </div>
                 <select id="edit_ownership_type" name="ownership_type" onchange="toggleFreetext(this.value)" class="{{$input}} appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20fill%3D%22none%22%20viewBox%3D%220%200%2020%2020%22%3E%3Cpath%20stroke%3D%22%236b7280%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20stroke-width%3D%221.5%22%20d%3D%22m6%208%204%204%204-4%22%2F%3E%3C%2Fsvg%3E')] bg-[length:1.25rem_1.25rem] bg-[right_0.75rem_center] bg-no-repeat pr-10">
                     <option value="privat-bolig">Privat bolig (Enebolig, rekkehus)</option>
                     <option value="privat-bygård">Privat bygård/blokk</option>

@@ -10,6 +10,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const markers = L.markerClusterGroup();
     let allHouses = [];
 
+    // Helper to build Kartverket URL
+    function getKartverketUrl(h) {
+        if (!h.knr || !h.gnr || !h.bnr) return null;
+        // Format: knr/gnr/bnr/fnr/snr
+        return `https://eiendomsregisteret.kartverket.no/eiendom/${h.knr}/${h.gnr}/${h.bnr}/${h.fnr || 0}/${h.snr || 0}`;
+    }
+
     // 2. Define global UI helpers
     window.openAddModal = function() {
         document.getElementById('editForm').reset();
@@ -17,6 +24,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('dialog_title').innerText = "Rapporter tom bolig";
         document.getElementById('edit_freetext_group').classList.add('hidden');
         document.getElementById('lookup_status').innerText = '';
+        document.getElementById('kartverket_link').classList.add('hidden');
         document.getElementById('editDialog').showModal();
     }
 
@@ -29,6 +37,23 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('edit_lat').value = house.lat;
         document.getElementById('edit_lng').value = house.lng;
         document.getElementById('edit_description').value = house.description;
+        
+        // Populate hidden matrikkel fields
+        document.getElementById('edit_knr').value = house.knr || '';
+        document.getElementById('edit_gnr').value = house.gnr || 0;
+        document.getElementById('edit_bnr').value = house.bnr || 0;
+        document.getElementById('edit_fnr').value = house.fnr || 0;
+        document.getElementById('edit_snr').value = house.snr || 0;
+
+        // Setup Kartverket link
+        const kvLink = document.getElementById('kartverket_link');
+        const url = getKartverketUrl(house);
+        if (url) {
+            kvLink.href = url;
+            kvLink.classList.remove('hidden');
+        } else {
+            kvLink.classList.add('hidden');
+        }
         
         const standardTypes = ['privat-bolig', 'privat-bygård', 'offentlig', 'næring', 'industri', 'gård', 'annet'];
         if (standardTypes.includes(house.ownership_type)) {
@@ -128,11 +153,25 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('edit_address').value = addr.adressetekst;
         document.getElementById('edit_lat').value = addr.representasjonspunkt.lat;
         document.getElementById('edit_lng').value = addr.representasjonspunkt.lon;
+        
+        // Populate hidden matrikkel fields
+        document.getElementById('edit_knr').value = addr.kommunenummer;
+        document.getElementById('edit_gnr').value = addr.gardsnummer;
+        document.getElementById('edit_bnr').value = addr.bruksnummer;
+        document.getElementById('edit_fnr').value = addr.festenummer || 0;
+        document.getElementById('edit_snr').value = addr.seksjonsnummer || 0;
+
         const statusDiv = document.getElementById('lookup_status');
         const resultsDiv = document.getElementById('lookup_results');
         statusDiv.innerText = `Valgt: ${addr.adressetekst}`;
         statusDiv.classList.add('text-green-500');
         resultsDiv.classList.add('hidden');
+
+        // Show direct Kartverket link
+        const kvLink = document.getElementById('kartverket_link');
+        const url = `https://eiendomsregisteret.kartverket.no/eiendom/${addr.kommunenummer}/${addr.gardsnummer}/${addr.bruksnummer}/${addr.festenummer || 0}/${addr.seksjonsnummer || 0}`;
+        kvLink.href = url;
+        kvLink.classList.remove('hidden');
 
         // Move map and add temporary search marker
         const latlng = [addr.representasjonspunkt.lat, addr.representasjonspunkt.lon];
@@ -175,6 +214,14 @@ document.addEventListener('DOMContentLoaded', () => {
         badge.innerHTML = `<span class="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest ${colors[type] || 'bg-gray-100 text-gray-500'}">${type.replace('-', ' ')}</span>`;
         document.getElementById('aside_edit_btn').onclick = () => window.openEditModal(house.id);
 
+        // Add Kartverket link to sidebar if we have the data
+        const kvUrl = getKartverketUrl(house);
+        const asideHeader = document.getElementById('aside_badge');
+        if (kvUrl) {
+            const linkHtml = `<a href="${kvUrl}" target="_blank" class="ml-2 text-[10px] font-bold text-blue-600 hover:underline">Se i matrikkelen →</a>`;
+            asideHeader.innerHTML += linkHtml;
+        }
+
         // Fetch and show history
         const historyList = document.getElementById('aside_history_list');
         historyList.innerHTML = '<div class="text-xs text-gray-400">Laster historikk...</div>';
@@ -213,7 +260,6 @@ document.addEventListener('DOMContentLoaded', () => {
         .then(houses => {
             allHouses = houses;
             houses.forEach(h => {
-                // IMPORTANT: Use JSON tag names 'lat' and 'lng'
                 const m = L.marker([h.lat, h.lng]);
                 m.on('click', () => window.showHouseDetails(h));
                 m.bindPopup(`<b class="text-gray-900">${h.address}</b><br><span class="text-[10px] font-black uppercase text-blue-600">${h.ownership_type.replace('-', ' ')}</span>`);
