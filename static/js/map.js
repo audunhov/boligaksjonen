@@ -353,13 +353,13 @@ document.addEventListener('DOMContentLoaded', () => {
             const customIcon = L.divIcon({
                 className: 'custom-div-icon',
                 html: `
-                    <svg class="size-8 drop-shadow-lg" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M12 2C8.13 2 5 5.13 5 9C5 14.25 12 22 12 22C12 22 19 14.25 19 9C19 5.13 15.87 2 12 2Z" fill="#2563EB"/>
+                    <svg class="size-10 drop-shadow-xl" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 2C8.13 2 5 5.13 5 9C5 14.25 12 22 12 22C12 22 19 14.25 19 9C19 5.13 15.87 2 12 2Z" fill="#2563EB" stroke="#1E40AF" stroke-width="0.5"/>
                         <circle cx="12" cy="9" r="2.5" fill="#1E40AF"/>
                     </svg>
                 `,
-                iconSize: [32, 32],
-                iconAnchor: [16, 32]
+                iconSize: [40, 40],
+                iconAnchor: [20, 40]
             });
 
             houses.forEach(h => {
