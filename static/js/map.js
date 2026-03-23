@@ -48,10 +48,11 @@ fetch('/api/houses')
         allHouses = houses;
         // Iterate over the data and add markers to the cluster group
         houses.forEach(house => {
+            const formattedDescription = house.description.replace(/\r\n/g, '<br>').replace(/\n/g, '<br>');
             const popupContent = `
                 <b>${house.address}</b><br>
                 <span class="badge badge-${house.ownership_type}">${house.ownership_type}</span><br>
-                ${house.description}<br>
+                ${formattedDescription}<br>
                 <div style="margin-top: 10px; font-size: 0.9em; color: #666;">
                     Last updated by: ${house.last_updated_by}<br>
                     Date: ${new Date(house.updated_at).toLocaleString()}
