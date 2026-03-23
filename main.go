@@ -4,6 +4,7 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/audunhov/tombolig/controllers"
 	"github.com/audunhov/tombolig/models"
@@ -16,13 +17,9 @@ func main() {
 
 	// Initialize database
 	if err := models.InitDB("tombolig.db"); err != nil {
-		slog.Error("Failed to initialize database", "error", err)
-		os.Exit(1)
+		slog.Error("Database initialization failed", "error", err)
+		return
 	}
-
-	// Serve static files (CSS, JS, images)
-	fs := http.FileServer(http.Dir("static"))
-	http.Handle("/static/", http.StripPrefix("/static/", fs))
 
 	// Register routes
 	http.HandleFunc("/", controllers.HomeHandler)
@@ -58,6 +55,5 @@ func main() {
 	slog.Info("Starting server", "port", port)
 	if err := http.ListenAndServe(port, nil); err != nil {
 		slog.Error("Server failed", "error", err)
-		os.Exit(1)
 	}
 }
