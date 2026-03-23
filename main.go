@@ -6,12 +6,19 @@ import (
 	"os"
 
 	"github.com/audunhov/tombolig/controllers"
+	"github.com/audunhov/tombolig/models"
 )
 
 func main() {
 	// Configure structured logging
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
 	slog.SetDefault(logger)
+
+	// Initialize database
+	if err := models.InitDB("tombolig.db"); err != nil {
+		slog.Error("Failed to initialize database", "error", err)
+		os.Exit(1)
+	}
 
 	// Serve static files (CSS, JS, images)
 	fs := http.FileServer(http.Dir("static"))
@@ -20,6 +27,8 @@ func main() {
 	// Register routes
 	http.HandleFunc("/", controllers.IndexHandler)
 	http.HandleFunc("/api/houses", controllers.APIHousesHandler)
+	http.HandleFunc("/houses/edit", controllers.EditHandler)
+	http.HandleFunc("/houses/update", controllers.UpdateHandler)
 
 	// Start server
 	port := ":8080"
