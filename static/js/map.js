@@ -206,20 +206,29 @@ L.control.layers(baseMaps, null, { position: 'bottomright' }).addTo(map);
         document.getElementById('edit_address').value = addr.adressetekst;
         document.getElementById('edit_lat').value = addr.representasjonspunkt.lat;
         document.getElementById('edit_lng').value = addr.representasjonspunkt.lon;
-        document.getElementById('edit_knr').value = addr.kommunenummer;
-        document.getElementById('edit_gnr').value = addr.gardsnummer;
-        document.getElementById('edit_bnr').value = addr.bruksnummer;
-        document.getElementById('edit_fnr').value = addr.festenummer || 0;
-        document.getElementById('edit_snr').value = addr.seksjonsnummer || 0;
+        
+        // Priority: Use first matrikkelenhet if available for accurate snr/fnr, 
+        // otherwise fallback to top-level fields.
+        const m = (addr.matrikkelenheter && addr.matrikkelenheter.length > 0) ? addr.matrikkelenheter[0] : addr;
+
+        document.getElementById('edit_knr').value = m.kommunenummer;
+        document.getElementById('edit_gnr').value = m.gardsnummer;
+        document.getElementById('edit_bnr').value = m.bruksnummer;
+        document.getElementById('edit_fnr').value = m.festenummer || 0;
+        document.getElementById('edit_snr').value = m.seksjonsnummer || 0;
+
         const statusDiv = document.getElementById('lookup_status');
         const resultsDiv = document.getElementById('lookup_results');
         statusDiv.innerText = `Valgt: ${addr.adressetekst}`;
         statusDiv.classList.add('text-green-500');
         resultsDiv.classList.add('hidden');
+
+        // Show direct Kartverket link using the detected matrikkel data
         const kvLink = document.getElementById('kartverket_link');
-        const url = `https://eiendomsregisteret.kartverket.no/eiendom/${addr.kommunenummer}/${addr.gardsnummer}/${addr.bruksnummer}/${addr.festenummer || 0}/${addr.seksjonsnummer || 0}`;
+        const url = `https://eiendomsregisteret.kartverket.no/eiendom/${m.kommunenummer}/${m.gardsnummer}/${m.bruksnummer}/${m.festenummer || 0}/${m.seksjonsnummer || 0}`;
         kvLink.href = url;
         kvLink.classList.remove('hidden');
+
         map.flyTo([addr.representasjonspunkt.lat, addr.representasjonspunkt.lon], 17);
     }
 
