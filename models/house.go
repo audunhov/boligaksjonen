@@ -116,21 +116,6 @@ func InitDB(filepath string) error {
 		}
 	}
 
-	// Seed data if table is completely empty
-	var count int
-	err = db.QueryRow("SELECT COUNT(*) FROM houses").Scan(&count)
-	if err == nil && count == 0 {
-		slog.Info("Database is empty, seeding initial mock data")
-		seedData := []House{
-			{Address: "Oslogate 1", Latitude: 59.9079, Longitude: 10.7686, Description: "Tom bolig siden 2023", OwnershipType: "offentlig", LastUpdatedBy: "System", UpdatedAt: time.Now(), KommuneNr: "0301", GardsNr: 232, BruksNr: 1},
-			{Address: "Trondheimsveien 5", Latitude: 59.9194, Longitude: 10.7645, Description: "Tomt lokale i 1. etasje", OwnershipType: "næring", LastUpdatedBy: "System", UpdatedAt: time.Now(), KommuneNr: "0301", GardsNr: 228, BruksNr: 1},
-			{Address: "Thorvald Meyers gate 10", Latitude: 59.9234, Longitude: 10.7588, Description: "Oppusningsobjekt, ubebodd", OwnershipType: "privat-bolig", LastUpdatedBy: "System", UpdatedAt: time.Now(), KommuneNr: "0301", GardsNr: 226, BruksNr: 1},
-		}
-		for _, h := range seedData {
-			AddHouse(h, nil, "SystemHash")
-		}
-	}
-
 	return nil
 }
 
