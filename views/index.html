@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Tom Bolig - Kontrollpanel</title>
+    <title>Boligaksjonen - Kontrollpanel</title>
     
     <!-- Tailwind CSS & Elements -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -80,7 +80,7 @@
                 <header id="floating-header" class="mx-auto max-w-5xl bg-white/95 backdrop-blur-md border border-gray-200 rounded-2xl shadow-lg flex h-14 sm:h-16 shrink-0 items-center gap-x-2 sm:gap-x-4 px-2 sm:px-6 pointer-events-auto">
                     <!-- Icon Link -->
                     <a href="/" class="flex h-9 w-9 sm:h-10 sm:w-10 shrink-0 items-center justify-center bg-blue-600 rounded-xl text-white font-black text-xs italic shadow-md shadow-blue-200 hover:bg-blue-700 transition-all active:scale-95">
-                        TB
+                        BA
                     </a>
 
                     <div class="flex flex-1 gap-x-2 sm:gap-x-4 self-stretch items-center min-w-0">
@@ -114,14 +114,14 @@
                                     </el-menu>
                                 </el-dropdown>
                             {{else}}
-                        <div class="flex items-center gap-1">
-                            <button class="bg-gray-900 text-white p-2 sm:px-4 sm:py-2 rounded-xl hover:bg-gray-800 transition-all shadow-lg shadow-gray-200" onclick="document.getElementById('loginDialog').showModal()">
-                                <svg class="size-4 sm:hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25V9m12 8.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 01-1.125-1.125V17.25M21 12.75a1.875 1.875 0 11-3.75 0 1.875 1.875 0 013.75 0zm-15 0a1.875 1.875 0 11-3.75 0 1.875 1.875 0 013.75 0z" /></svg>
-                                <span class="hidden sm:inline text-[10px] font-black uppercase tracking-widest px-1">Logg inn</span>
-                            </button>
-                        </div>
-                    {{end}}
-
+                                <div class="flex items-center gap-1">
+                                    <button class="text-[10px] font-black uppercase tracking-tighter text-gray-500 hover:text-blue-600 px-3 py-2" onclick="window.showSignup()">Registrer</button>
+                                    <button class="bg-gray-900 text-white p-2 sm:px-4 sm:py-2 rounded-xl hover:bg-gray-800 transition-all shadow-lg shadow-gray-200" onclick="document.getElementById('loginDialog').showModal()">
+                                        <svg class="size-4 sm:hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25V9m12 8.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 01-1.125-1.125V17.25M21 12.75a1.875 1.875 0 11-3.75 0 1.875 1.875 0 013.75 0zm-15 0a1.875 1.875 0 11-3.75 0 1.875 1.875 0 013.75 0z" /></svg>
+                                        <span class="hidden sm:inline text-[10px] font-black uppercase tracking-widest px-1">Logg inn</span>
+                                    </button>
+                                </div>
+                            {{end}}
                         </div>
                     </div>
                 </header>
@@ -199,12 +199,12 @@
 
     <!-- Modals (Simplified for Mobile) -->
     {{$dialog_classes := "border-none rounded-3xl shadow-2xl p-0 w-[95%] sm:w-[90%] max-w-md overflow-hidden backdrop:backdrop-blur-md"}}
-    {{$header_classes := "flex justify-between items-center px-6 sm:px-10 py-6 sm:py-8 bg-gray-50 border-b border-gray-100"}}
+    {{$header_classes := "flex justify-between items-center px-6 sm:px-10 py-4 sm:py-6 bg-gray-50 border-b border-gray-100"}}
     {{$input := "w-full px-4 py-3 bg-white border border-gray-200 rounded-2xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all placeholder:text-gray-400 text-sm"}}
     {{$label := "block text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-2 leading-none ml-1"}}
 
     <dialog id="editDialog" class="{{$dialog_classes}}">
-        <div class="flex justify-between items-center px-6 sm:px-10 py-4 sm:py-6 bg-gray-50 border-b border-gray-100">
+        <div class="{{$header_classes}}">
             <h2 id="dialog_title" class="text-xl sm:text-2xl font-black text-gray-900 tracking-tight">Rapporter</h2>
             <button class="text-gray-300 hover:text-gray-900 text-3xl" onclick="document.getElementById('editDialog').close()">&times;</button>
         </div>
@@ -228,10 +228,10 @@
             <div><label class="{{$label}}">Breddegrad</label><input type="number" step="any" id="edit_lat" name="lat" required readonly class="{{$input}} bg-gray-50/50 text-gray-400 cursor-not-allowed"></div>
             <div><label class="{{$label}}">Lengdegrad</label><input type="number" step="any" id="edit_lng" name="lng" required readonly class="{{$input}} bg-gray-50/50 text-gray-400 cursor-not-allowed"></div>
 
+            <div>
                 <label class="{{$label}}">Kategori / Eieform</label>
                 <select id="edit_ownership_type" name="ownership_type" onchange="toggleFreetext(this.value)" class="{{$input}} appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20fill%3D%22none%22%20viewBox%3D%220%200%2020%2020%22%3E%3Cpath%20stroke%3D%22%236b7280%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20stroke-width%3D%221.5%22%20d%3D%22m6%208%204%204%204-4%22%2F%3E%3C%2Fsvg%3E')] bg-[length:1.25rem_1.25rem] bg-[right_1rem_center] bg-no-repeat pr-10">
                     <option value="privat-bolig">Privat bolig</option>
-
                     <option value="privat-bygård">Privat bygård/blokk</option>
                     <option value="offentlig">Offentlig bygg</option>
                     <option value="næring">Næring/Butikk</option>
@@ -259,38 +259,37 @@
         </form>
     </dialog>
 
-    <!-- Auth Dialogs (Re-used classes) -->
+    <!-- Auth Dialogs -->
     <dialog id="loginDialog" class="{{$dialog_classes}}">
         <div class="p-8 sm:p-12">
             <div class="flex justify-between items-center mb-8 sm:mb-10">
-                <h2 class="text-2xl sm:text-3xl font-black text-gray-900 tracking-tight">Logg inn</h2>
+                <h2 class="text-2xl sm:text-3xl font-black text-gray-900 tracking-tight italic">Logg inn</h2>
                 <button class="text-gray-300 hover:text-gray-900 text-2xl" onclick="document.getElementById('loginDialog').close()">&times;</button>
             </div>
-            <form action="/login" method="POST" class="space-y-6">
+            <form action="/login" method="POST" class="space-y-4 sm:space-y-6">
                 <div><label class="{{$label}}">Brukernavn</label><input type="text" name="username" required class="{{$input}}"></div>
                 <div><label class="{{$label}}">Passord</label><input type="password" name="password" required class="{{$input}}"></div>
                 <div class="text-center">
                     <button type="button" class="text-[10px] font-black uppercase tracking-tighter text-gray-400 hover:text-blue-600 transition-colors" onclick="window.showSignup()">Ny bruker? Registrer deg her</button>
                 </div>
-                <div class="pt-6 flex gap-4">
-                    <button type="button" class="flex-1 py-4 text-gray-400 font-bold" onclick="document.getElementById('loginDialog').close()">Avbryt</button>
-                    <button type="submit" class="flex-1 py-4 bg-blue-600 hover:bg-blue-700 text-white font-black uppercase tracking-widest text-xs rounded-2xl shadow-xl shadow-blue-100 transition-all">Logg inn</button>
+                <div class="pt-4 sm:pt-6 flex gap-3 sm:gap-4">
+                    <button type="button" class="flex-1 py-3 text-gray-400 font-bold" onclick="document.getElementById('loginDialog').close()">Avbryt</button>
+                    <button type="submit" class="flex-1 py-3 bg-blue-600 hover:bg-blue-700 text-white font-black uppercase text-[10px] sm:text-xs rounded-2xl shadow-xl">Logg inn</button>
                 </div>
             </form>
-
         </div>
     </dialog>
 
     <dialog id="signupDialog" class="{{$dialog_classes}}">
         <div class="p-8 sm:p-12">
             <div class="flex justify-between items-center mb-8 sm:mb-10">
-                <h2 class="text-2xl sm:text-3xl font-black text-gray-900 tracking-tight">Bli med</h2>
+                <h2 class="text-2xl sm:text-3xl font-black text-gray-900 tracking-tight italic">Bli med</h2>
                 <button class="text-gray-300 hover:text-gray-900 text-2xl" onclick="document.getElementById('signupDialog').close()">&times;</button>
             </div>
             <form id="signupForm" action="/signup" method="POST" class="space-y-4 sm:space-y-6" onsubmit="return window.validateSignup(event)">
                 <div>
                     <label class="{{$label}}">Brukernavn</label>
-                    <input type="text" id="signup_username" name="username" required class="{{$input}}" oninput="debouncedUsernameCheck(this.value)">
+                    <input type="text" id="signup_username" name="username" required class="{{$input}}" oninput="window.debouncedUsernameCheck(this.value)">
                     <p id="username_notice" class="text-[9px] font-black uppercase tracking-widest mt-1 hidden"></p>
                 </div>
                 <div>

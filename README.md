@@ -1,5 +1,5 @@
-# Tom Bolig
+# Boligaksjonen
 
 Vi synes ingen boliger burde stå tomme!
 
-Tom bolig er et nettsted for å finne ut hvor mange tomme boliger det finnes i ditt lokalsamfunn.
+Boligaksjonen er et nettsted for å finne ut hvor mange tomme boliger det finnes i ditt lokalsamfunn.

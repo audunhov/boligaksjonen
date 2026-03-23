@@ -205,7 +205,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.openAddModal = function() {
         document.getElementById('editForm').reset();
         document.getElementById('edit_id').value = "0";
-        document.getElementById('dialog_title').innerText = "Rapporter tom bolig";
+        document.getElementById('dialog_title').innerText = "Rapporter til Boligaksjonen";
         document.getElementById('edit_freetext_group').classList.add('hidden');
         document.getElementById('lookup_status').innerText = '';
         document.getElementById('restore_notice').classList.add('hidden');
