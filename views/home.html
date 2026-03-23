@@ -14,7 +14,8 @@
         <header class="flex justify-between items-center py-6 border-b border-gray-100">
             <a href="/" class="text-2xl font-black text-blue-600 tracking-tight">Tom Bolig</a>
             <div class="flex items-center gap-4">
-                {{if .UserID}}
+                {{if .Username}}
+                    <span class="text-sm font-bold text-gray-500 mr-2">Hei, {{.Username}}</span>
                     <a href="/logout" class="px-5 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-bold rounded-full transition-all">Logg ut</a>
                 {{else}}
                     <button class="px-5 py-2.5 text-gray-600 hover:text-blue-600 text-sm font-bold rounded-full transition-all" onclick="document.getElementById('loginDialog').showModal()">Logg inn</button>

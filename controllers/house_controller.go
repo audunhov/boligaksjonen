@@ -31,6 +31,13 @@ func getLoggedInUserID(r *http.Request) *int {
 	if err != nil {
 		return nil
 	}
+	
+	// Verify user exists in DB
+	_, err = models.GetUserByID(id)
+	if err != nil {
+		return nil
+	}
+	
 	return &id
 }
 
@@ -53,10 +60,21 @@ func HomeHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	
+	var username string
+	userID := getLoggedInUserID(r)
+	if userID != nil {
+		user, err := models.GetUserByID(*userID)
+		if err == nil {
+			username = user.Username
+		}
+	}
+
 	data := struct {
-		UserID *int
+		UserID   *int
+		Username string
 	}{
-		UserID: getLoggedInUserID(r),
+		UserID:   userID,
+		Username: username,
 	}
 	tmpl.Execute(w, data)
 }
