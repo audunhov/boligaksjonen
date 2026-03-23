@@ -122,6 +122,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    let searchMarker = null;
+
     window.selectAddress = function(addr) {
         document.getElementById('edit_address').value = addr.adressetekst;
         document.getElementById('edit_lat').value = addr.representasjonspunkt.lat;
@@ -131,6 +133,20 @@ document.addEventListener('DOMContentLoaded', () => {
         statusDiv.innerText = `Valgt: ${addr.adressetekst}`;
         statusDiv.classList.add('text-green-500');
         resultsDiv.classList.add('hidden');
+
+        // Move map and add temporary search marker
+        const latlng = [addr.representasjonspunkt.lat, addr.representasjonspunkt.lon];
+        map.flyTo(latlng, 17);
+        
+        if (searchMarker) map.removeLayer(searchMarker);
+        searchMarker = L.marker(latlng, {
+            icon: L.divIcon({
+                className: 'custom-div-icon',
+                html: "<div class='size-4 bg-blue-600 border-2 border-white rounded-full shadow-lg animate-bounce'></div>",
+                iconSize: [16, 16],
+                iconAnchor: [8, 8]
+            })
+        }).addTo(map);
     }
 
     window.showHouseDetails = function(house) {
