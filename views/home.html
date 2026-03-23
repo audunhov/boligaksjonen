@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Boligaksjonen - Bli med på dugnaden</title>
+    <link rel="icon" type="image/svg+xml" href="/static/img/logo.svg">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         dialog::backdrop { background: rgba(0,0,0,0.5); backdrop-filter: blur(2px); }
@@ -12,7 +13,9 @@
 <body class="bg-gray-50 text-gray-900 font-sans leading-normal tracking-normal">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <header class="flex justify-between items-center py-6 border-b border-gray-100">
-            <a href="/" class="text-2xl font-black text-blue-600 tracking-tight italic">BA</a>
+            <a href="/" class="flex h-10 w-10 shrink-0 shadow-md shadow-blue-200 hover:scale-105 transition-all active:scale-95" title="Gå til forsiden">
+                <img src="/static/img/logo.svg" alt="Boligaksjonen Logo" class="h-full w-full rounded-xl">
+            </a>
             <div class="flex items-center gap-4">
                 {{if .Username}}
                     <span class="text-xs font-bold text-gray-500 mr-2 lowercase">hei, {{.Username}}</span>
@@ -26,10 +29,10 @@
 
         <main class="py-16 lg:py-24">
             <div class="max-w-4xl mx-auto text-center mb-20">
-                <h1 class="text-5xl lg:text-8xl font-black text-gray-900 leading-[0.9] tracking-tighter mb-8">
+                <h1 class="text-5xl lg:text-8xl font-black text-gray-900 leading-[0.9] tracking-tighter mb-8 text-balance">
                     Det står <span class="text-blue-600">200 000</span> boliger tomme i Norge.
                 </h1>
-                <p class="text-xl lg:text-2xl text-gray-500 font-medium leading-relaxed mb-12">
+                <p class="text-xl lg:text-2xl text-gray-500 font-medium leading-relaxed mb-12 max-w-2xl mx-auto">
                     Samtidig som boligprisene skyter i været, står tusenvis av hjem og forfaller. Vi kartlegger dugnaden som myndighetene har glemt.
                 </p>
                 
@@ -60,7 +63,7 @@
             </div>
 
             <!-- Context Section -->
-            <div class="max-w-5xl mx-auto bg-white p-8 lg:p-16 rounded-[3rem] shadow-2xl shadow-gray-200/50 border border-gray-100 relative overflow-hidden">
+            <div class="max-w-5xl mx-auto bg-white p-8 lg:p-16 rounded-[3rem] shadow-2xl shadow-gray-200/50 border border-gray-100 relative overflow-hidden text-balance">
                 <div class="absolute top-0 right-0 p-8 opacity-10">
                     <svg class="size-64 text-blue-600" fill="currentColor" viewBox="0 0 24 24"><path d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/><path fill-rule="evenodd" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0ZM12 13.5a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" clip-rule="evenodd"/></svg>
                 </div>
@@ -88,8 +91,8 @@
 
     <dialog id="loginDialog" class="{{$dialog_classes}}">
         <div class="p-12">
-            <h2 class="text-3xl font-black text-gray-900 tracking-tighter mb-8 italic">Logg inn</h2>
-            <form action="/login" method="POST" class="space-y-6">
+            <h2 class="text-3xl font-black text-gray-900 tracking-tighter mb-8 italic text-left">Logg inn</h2>
+            <form action="/login" method="POST" class="space-y-6 text-left">
                 <div><label class="{{$label}}">Brukernavn</label><input type="text" name="username" required class="{{$input}}"></div>
                 <div><label class="{{$label}}">Passord</label><input type="password" name="password" required class="{{$input}}"></div>
                 <div class="pt-4 flex gap-4">
