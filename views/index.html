@@ -212,6 +212,13 @@
                 <label class="{{$label}}">Adresse</label>
                 <input type="text" id="edit_address" name="address" required class="{{$input}}" placeholder="f.eks. Storgata 10, Oslo" oninput="debouncedModalLookup()">
                 <div id="lookup_status" class="text-[10px] mt-2 font-black uppercase text-gray-400"></div>
+                <!-- Restoration Notice -->
+                <div id="restore_notice" class="mt-3 p-3 bg-blue-50 border border-blue-100 rounded-xl hidden">
+                    <div class="flex gap-2">
+                        <svg class="size-4 text-blue-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" /></svg>
+                        <p class="text-[10px] font-bold text-blue-800 leading-tight">Denne boligen har vært rapportert tidligere. Ved å sende inn skjemaet vil du gjenåpne og oppdatere den eksisterende oppføringen.</p>
+                    </div>
+                </div>
                 <div id="lookup_results" class="border border-gray-100 rounded-2xl mt-3 hidden bg-white shadow-xl overflow-hidden divide-y divide-gray-50"></div>
             </div>
 

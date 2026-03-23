@@ -68,6 +68,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('dialog_title').innerText = "Rapporter tom bolig";
         document.getElementById('edit_freetext_group').classList.add('hidden');
         document.getElementById('lookup_status').innerText = '';
+        document.getElementById('restore_notice').classList.add('hidden');
         document.getElementById('editDialog').showModal();
     }
 
@@ -186,6 +187,15 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('edit_lat').value = addr.representasjonspunkt.lat;
         document.getElementById('edit_lng').value = addr.representasjonspunkt.lon;
         
+        // Check for existing deleted entry
+        const existingDeleted = allHouses.find(h => h.address === addr.adressetekst && h.is_deleted);
+        const notice = document.getElementById('restore_notice');
+        if (existingDeleted) {
+            notice.classList.remove('hidden');
+        } else {
+            notice.classList.add('hidden');
+        }
+
         const statusDiv = document.getElementById('lookup_status');
         const resultsDiv = document.getElementById('lookup_results');
         statusDiv.innerText = `Valgt: ${addr.adressetekst}`;
@@ -331,6 +341,9 @@ document.addEventListener('DOMContentLoaded', () => {
         .then(houses => {
             allHouses = houses;
             houses.forEach(h => {
+                // Only show active houses on the map
+                if (h.is_deleted) return;
+
                 const m = L.marker([h.lat, h.lng]);
                 m.on('click', () => {
                     map.flyTo([h.lat, h.lng], 17);

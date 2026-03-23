@@ -119,7 +119,35 @@ func InitDB(filepath string) error {
 	return nil
 }
 
-// GetAllHouses returns all houses from the database.
+// GetAllHousesFull returns all houses (including deleted) from the database.
+func GetAllHousesFull() []House {
+	houses := []House{}
+	if db == nil {
+		return houses
+	}
+
+	rows, err := db.Query(`
+		SELECT id, address, latitude, longitude, description, ownership_type, last_updated_by, updated_at, user_id, anon_hash, IFNULL(knr, ''), IFNULL(gnr, 0), IFNULL(bnr, 0), IFNULL(fnr, 0), IFNULL(snr, 0), is_deleted
+		FROM houses
+	`)
+	if err != nil {
+		slog.Error("Failed to query all houses", "error", err)
+		return houses
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var h House
+		if err := rows.Scan(&h.ID, &h.Address, &h.Latitude, &h.Longitude, &h.Description, &h.OwnershipType, &h.LastUpdatedBy, &h.UpdatedAt, &h.UserID, &h.AnonHash, &h.KommuneNr, &h.GardsNr, &h.BruksNr, &h.FesteNr, &h.SeksjonsNr, &h.IsDeleted); err != nil {
+			slog.Error("Failed to scan house row", "error", err)
+			continue
+		}
+		houses = append(houses, h)
+	}
+	return houses
+}
+
+// GetAllHouses returns all active houses from the database.
 func GetAllHouses() []House {
 	houses := []House{}
 	if db == nil {

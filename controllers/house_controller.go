@@ -107,9 +107,9 @@ func MapHandler(w http.ResponseWriter, r *http.Request) {
 	tmpl.Execute(w, data)
 }
 
-// APIHousesHandler retrieves house data and returns it as JSON.
+// APIHousesHandler retrieves all house data (including deleted for search detection) and returns it as JSON.
 func APIHousesHandler(w http.ResponseWriter, r *http.Request) {
-	houses := models.GetAllHouses()
+	houses := models.GetAllHousesFull()
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
 	json.NewEncoder(w).Encode(houses)
