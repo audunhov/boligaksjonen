@@ -1,7 +1,14 @@
 // Initialize the map centered on Oslo
 document.addEventListener('DOMContentLoaded', () => {
-    // 1. Initialize Leaflet
-    const map = L.map('map').setView([59.9139, 10.7522], 13);
+    // 1. Initialize Leaflet (disable default zoom control)
+    const map = L.map('map', {
+        zoomControl: false
+    }).setView([59.9139, 10.7522], 13);
+    
+    // Add custom zoom control at bottomleft
+    L.control.zoom({
+        position: 'bottomleft'
+    }).addTo(map);
     
     const topo = L.tileLayer('https://cache.kartverket.no/v1/wmts/1.0.0/topo/default/webmercator/{z}/{y}/{x}.png', {
         maxZoom: 18,
