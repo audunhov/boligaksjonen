@@ -12,110 +12,105 @@
 <body class="bg-gray-50 text-gray-900 font-sans leading-normal tracking-normal">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <header class="flex justify-between items-center py-6 border-b border-gray-100">
-            <a href="/" class="text-2xl font-black text-blue-600 tracking-tight">Tom Bolig</a>
+            <a href="/" class="text-2xl font-black text-blue-600 tracking-tight italic">TB</a>
             <div class="flex items-center gap-4">
                 {{if .Username}}
-                    <span class="text-sm font-bold text-gray-500 mr-2">Hei, {{.Username}}</span>
-                    <a href="/logout" class="px-5 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-bold rounded-full transition-all">Logg ut</a>
+                    <span class="text-xs font-bold text-gray-500 mr-2 lowercase">hei, {{.Username}}</span>
+                    <a href="/logout" class="px-5 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-black uppercase tracking-widest rounded-full transition-all">Logg ut</a>
                 {{else}}
-                    <button class="px-5 py-2.5 text-gray-600 hover:text-blue-600 text-sm font-bold rounded-full transition-all" onclick="document.getElementById('loginDialog').showModal()">Logg inn</button>
-                    <button class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold rounded-full shadow-sm transition-all" onclick="document.getElementById('signupDialog').showModal()">Registrer</button>
+                    <button class="px-5 py-2.5 text-gray-600 hover:text-blue-600 text-xs font-black uppercase tracking-widest rounded-full transition-all" onclick="document.getElementById('loginDialog').showModal()">Logg inn</button>
+                    <button class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-black uppercase tracking-widest rounded-full shadow-lg shadow-blue-100 transition-all" onclick="document.getElementById('signupDialog').showModal()">Bli med</button>
                 {{end}}
             </div>
         </header>
 
-        <main class="py-20 lg:py-32">
-            <div class="grid lg:grid-cols-2 gap-12 items-center">
-                <div>
-                    <h1 class="text-5xl lg:text-7xl font-black text-gray-900 leading-tight mb-6">
-                        Vi synes ingen boliger burde <span class="text-blue-600 underline decoration-blue-200">stå tomme!</span>
-                    </h1>
-                    <p class="text-xl text-gray-600 mb-10 leading-relaxed max-w-lg">
-                        Bli med på dugnaden for å kartlegge tomme boliger i ditt lokalsamfunn. Sammen kan vi skape mer liv i gatene våre og presse på for bedre boligpolitikk.
-                    </p>
-                    <div class="flex flex-col sm:flex-row gap-4">
-                        <a href="/kart" class="px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white text-lg font-bold rounded-xl shadow-lg shadow-blue-200 transition-all text-center">Utforsk kartet</a>
-                        <button onclick="document.getElementById('signupDialog').showModal()" class="px-8 py-4 bg-white border-2 border-gray-100 hover:border-blue-100 hover:bg-blue-50 text-gray-700 text-lg font-bold rounded-xl transition-all text-center">Bli med som bidragsyter</button>
-                    </div>
+        <main class="py-16 lg:py-24">
+            <div class="max-w-4xl mx-auto text-center mb-20">
+                <h1 class="text-5xl lg:text-8xl font-black text-gray-900 leading-[0.9] tracking-tighter mb-8">
+                    Det står <span class="text-blue-600">200 000</span> boliger tomme i Norge.
+                </h1>
+                <p class="text-xl lg:text-2xl text-gray-500 font-medium leading-relaxed mb-12">
+                    Samtidig som boligprisene skyter i været, står tusenvis av hjem og forfaller. Vi kartlegger dugnaden som myndighetene har glemt.
+                </p>
+                
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <a href="/kart" class="px-10 py-5 bg-gray-900 hover:bg-black text-white text-lg font-black uppercase tracking-widest rounded-2xl shadow-2xl transition-all scale-100 hover:scale-105 active:scale-95">
+                        Utforsk kartet nå
+                    </a>
+                    <button onclick="document.getElementById('signupDialog').showModal()" class="px-10 py-5 bg-white border-2 border-gray-200 hover:border-blue-200 hover:bg-blue-50 text-gray-900 text-lg font-black uppercase tracking-widest rounded-2xl transition-all">
+                        Registrer deg
+                    </button>
                 </div>
-                <div class="relative hidden lg:block">
-                    <div class="absolute -inset-4 bg-blue-100 rounded-3xl transform rotate-2"></div>
-                    <div class="relative bg-white p-8 rounded-3xl shadow-xl border border-gray-100">
-                        <div class="space-y-6">
-                            <div class="flex items-start gap-4">
-                                <div class="w-10 h-10 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center flex-shrink-0 font-bold">1</div>
-                                <div>
-                                    <h3 class="font-bold text-lg">Finn en tom bolig</h3>
-                                    <p class="text-gray-500">Ser du en leilighet eller et hus som har stått tomt lenge?</p>
-                                </div>
-                            </div>
-                            <div class="flex items-start gap-4">
-                                <div class="w-10 h-10 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center flex-shrink-0 font-bold">2</div>
-                                <div>
-                                    <h3 class="font-bold text-lg">Marker den i kartet</h3>
-                                    <p class="text-gray-500">Legg inn adresse og en kort beskrivelse helt anonymt.</p>
-                                </div>
-                            </div>
-                            <div class="flex items-start gap-4">
-                                <div class="w-10 h-10 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center flex-shrink-0 font-bold">3</div>
-                                <div>
-                                    <h3 class="font-bold text-lg">Skap endring</h3>
-                                    <p class="text-gray-500">Dine data hjelper oss å visualisere boligmangelen.</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+            </div>
+
+            <!-- Stats Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-32">
+                <div class="bg-white p-10 rounded-[2.5rem] shadow-xl shadow-gray-200/50 border border-gray-100 text-center">
+                    <p class="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-2">Rapporterte boliger</p>
+                    <p class="text-6xl font-black text-blue-600 tracking-tighter">{{.Stats.TotalHouses}}</p>
+                </div>
+                <div class="bg-white p-10 rounded-[2.5rem] shadow-xl shadow-gray-200/50 border border-gray-100 text-center">
+                    <p class="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-2">Bidragsytere</p>
+                    <p class="text-6xl font-black text-gray-900 tracking-tighter">{{.Stats.TotalContributors}}</p>
+                </div>
+                <div class="bg-blue-600 p-10 rounded-[2.5rem] shadow-xl shadow-blue-200 border border-blue-500 text-center">
+                    <p class="text-[10px] font-black uppercase tracking-[0.2em] text-blue-200 mb-2">Nasjonalt estimat</p>
+                    <p class="text-6xl font-black text-white tracking-tighter">200k</p>
+                </div>
+            </div>
+
+            <!-- Context Section -->
+            <div class="max-w-5xl mx-auto bg-white p-8 lg:p-16 rounded-[3rem] shadow-2xl shadow-gray-200/50 border border-gray-100 relative overflow-hidden">
+                <div class="absolute top-0 right-0 p-8 opacity-10">
+                    <svg class="size-64 text-blue-600" fill="currentColor" viewBox="0 0 24 24"><path d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/><path fill-rule="evenodd" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0ZM12 13.5a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" clip-rule="evenodd"/></svg>
+                </div>
+                <div class="relative z-10 lg:w-2/3">
+                    <h2 class="text-3xl lg:text-5xl font-black text-gray-900 tracking-tight mb-6 italic">Hvorfor gjør vi dette?</h2>
+                    <p class="text-lg text-gray-600 mb-8 leading-relaxed">
+                        Ifølge en fersk rapport omtalt i <a href="https://e24.no/norsk-oekonomi/i/RjyKEW/ny-rapport-200-000-boliger-staar-tomme-i-norge" target="_blank" class="text-blue-600 font-bold hover:underline">E24</a>, står det nesten 200 000 boliger tomme i Norge. Dette er boliger som kunne vært brukt til å løse boligkrisen, skape liv i distriktene eller gi unge en vei inn på markedet.
+                    </p>
+                    <p class="text-lg text-gray-600 leading-relaxed">
+                        Tom Bolig er en åpen, samfunnsdrevet plattform for å synliggjøre disse ressursene. Sammen bygger vi bevisbyrden for en mer rettferdig boligpolitikk.
+                    </p>
                 </div>
             </div>
         </main>
+
+        <footer class="py-12 border-t border-gray-100 text-center text-gray-400">
+            <p class="text-[10px] font-black uppercase tracking-[0.2em]">Tom Bolig &copy; 2026 — En åpen dugnad</p>
+        </footer>
     </div>
 
-    <!-- Login Dialog -->
-    {{$dialog_classes := "border-none rounded-2xl shadow-2xl p-0 w-[90%] max-w-md"}}
-    {{$input := "w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all"}}
-    
+    <!-- Auth Dialogs (Synced with Map theme) -->
+    {{$dialog_classes := "border-none rounded-[2.5rem] shadow-2xl p-0 w-[95%] sm:w-[90%] max-w-md overflow-hidden backdrop:backdrop-blur-md"}}
+    {{$input := "w-full px-4 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all placeholder:text-gray-400 text-sm"}}
+    {{$label := "block text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-2 ml-1"}}
+
     <dialog id="loginDialog" class="{{$dialog_classes}}">
-        <div class="p-8">
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="text-2xl font-black text-gray-900">Logg inn</h2>
-                <button class="text-gray-400 hover:text-gray-600 text-2xl" onclick="document.getElementById('loginDialog').close()">&times;</button>
-            </div>
-            <form action="/login" method="POST" class="space-y-4">
-                <div>
-                    <label class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Brukernavn</label>
-                    <input type="text" name="username" required class="{{$input}}">
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Passord</label>
-                    <input type="password" name="password" required class="{{$input}}">
-                </div>
-                <div class="pt-4 flex gap-3">
-                    <button type="button" class="flex-1 py-3 text-gray-500 font-bold hover:text-gray-700" onclick="document.getElementById('loginDialog').close()">Avbryt</button>
-                    <button type="submit" class="flex-1 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg shadow-blue-100 transition-all">Logg inn</button>
+        <div class="p-12">
+            <h2 class="text-3xl font-black text-gray-900 tracking-tighter mb-8 italic">Logg inn</h2>
+            <form action="/login" method="POST" class="space-y-6">
+                <div><label class="{{$label}}">Brukernavn</label><input type="text" name="username" required class="{{$input}}"></div>
+                <div><label class="{{$label}}">Passord</label><input type="password" name="password" required class="{{$input}}"></div>
+                <div class="pt-4 flex gap-4">
+                    <button type="button" class="flex-1 py-4 text-gray-400 font-bold" onclick="document.getElementById('loginDialog').close()">Avbryt</button>
+                    <button type="submit" class="flex-1 py-4 bg-blue-600 hover:bg-blue-700 text-white font-black uppercase tracking-widest text-xs rounded-2xl shadow-xl transition-all">Logg inn</button>
                 </div>
             </form>
         </div>
     </dialog>
 
-    <!-- Signup Dialog -->
     <dialog id="signupDialog" class="{{$dialog_classes}}">
-        <div class="p-8">
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="text-2xl font-black text-gray-900">Registrer</h2>
-                <button class="text-gray-400 hover:text-gray-600 text-2xl" onclick="document.getElementById('signupDialog').close()">&times;</button>
-            </div>
-            <form action="/signup" method="POST" class="space-y-4">
-                <div>
-                    <label class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Brukernavn</label>
-                    <input type="text" name="username" required class="{{$input}}">
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Passord</label>
-                    <input type="password" name="password" required class="{{$input}}">
-                </div>
-                <div class="pt-4 flex gap-3">
-                    <button type="button" class="flex-1 py-3 text-gray-500 font-bold hover:text-gray-700" onclick="document.getElementById('signupDialog').close()">Avbryt</button>
-                    <button type="submit" class="flex-1 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg shadow-blue-100 transition-all">Registrer</button>
+        <div class="p-12 text-center">
+            <h2 class="text-3xl font-black text-gray-900 tracking-tighter mb-4 italic text-left">Bli med</h2>
+            <p class="text-sm text-gray-500 mb-8 text-left">For å sikre kvaliteten på dataene våre ber vi alle bidragsytere om å opprette en enkel profil.</p>
+            <form action="/signup" method="POST" class="space-y-6 text-left">
+                <div><label class="{{$label}}">Brukernavn</label><input type="text" name="username" required class="{{$input}}"></div>
+                <div><label class="{{$label}}">Passord</label><input type="password" name="password" required class="{{$input}}"></div>
+                <div><label class="{{$label}}">Bekreft passord</label><input type="password" name="confirm_password" required class="{{$input}}"></div>
+                <div class="pt-4 flex gap-4">
+                    <button type="button" class="flex-1 py-4 text-gray-400 font-bold" onclick="document.getElementById('signupDialog').close()">Avbryt</button>
+                    <button type="submit" class="flex-1 py-4 bg-gray-900 hover:bg-black text-white font-black uppercase tracking-widest text-xs rounded-2xl shadow-xl transition-all">Registrer deg</button>
                 </div>
             </form>
         </div>

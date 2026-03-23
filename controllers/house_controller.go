@@ -95,12 +95,16 @@ func HomeHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	stats := models.GetGlobalStats()
+
 	data := struct {
 		UserID   *int
 		Username string
+		Stats    models.Stats
 	}{
 		UserID:   userID,
 		Username: username,
+		Stats:    stats,
 	}
 	tmpl.Execute(w, data)
 }

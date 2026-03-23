@@ -424,6 +424,34 @@ func GetAuditLogsForHouse(houseID int) []AuditLog {
 	return logs
 }
 
+// Stats represents global application statistics.
+type Stats struct {
+	TotalHouses      int
+	TotalContributors int
+}
+
+// GetGlobalStats retrieves totals for the landing page.
+func GetGlobalStats() Stats {
+	var s Stats
+	if db == nil {
+		return s
+	}
+
+	// Total houses (excluding deleted)
+	db.QueryRow("SELECT COUNT(*) FROM houses WHERE is_deleted = 0").Scan(&s.TotalHouses)
+
+	// Total unique contributors (users + unique anon hashes from audit_log)
+	db.QueryRow(`
+		SELECT COUNT(DISTINCT combined_id) FROM (
+			SELECT CAST(user_id AS TEXT) as combined_id FROM audit_log WHERE user_id IS NOT NULL
+			UNION
+			SELECT anon_hash as combined_id FROM audit_log WHERE user_id IS NULL
+		)
+	`).Scan(&s.TotalContributors)
+
+	return s
+}
+
 // UserExists checks if a username already exists.
 func UserExists(username string) bool {
 	var count int
