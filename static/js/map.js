@@ -21,12 +21,13 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     topo.addTo(map);
+// Add Layer Control
+const baseMaps = {
+    "Kartverket": topo,
+    "OpenStreetMap": detailed
+};
+L.control.layers(baseMaps, null, { position: 'bottomright' }).addTo(map);
 
-    const baseMaps = {
-        "Kartverket": topo,
-        "OpenStreetMap": detailed
-    };
-    L.control.layers(baseMaps, null, { position: 'bottomleft' }).addTo(map);
 
     const markers = L.markerClusterGroup();
     let allHouses = [];
