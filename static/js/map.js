@@ -158,6 +158,37 @@ document.addEventListener('DOMContentLoaded', () => {
         };
         badge.innerHTML = `<span class="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest ${colors[type] || 'bg-gray-100 text-gray-500'}">${type.replace('-', ' ')}</span>`;
         document.getElementById('aside_edit_btn').onclick = () => window.openEditModal(house.id);
+
+        // Fetch and show history
+        const historyList = document.getElementById('aside_history_list');
+        historyList.innerHTML = '<div class="text-xs text-gray-400">Laster historikk...</div>';
+        
+        fetch(`/api/houses/history?id=${house.id}`)
+            .then(res => res.json())
+            .then(logs => {
+                if (logs.length === 0) {
+                    historyList.innerHTML = '<div class="text-xs text-gray-400 italic">Ingen historikk funnet.</div>';
+                    return;
+                }
+                historyList.innerHTML = '';
+                logs.forEach(log => {
+                    const item = document.createElement('div');
+                    item.className = 'relative pl-6 pb-6 border-l border-gray-100 last:border-0';
+                    item.innerHTML = `
+                        <div class="absolute -left-[5px] top-1.5 size-2.5 rounded-full border-2 border-white ${log.action === 'add' ? 'bg-green-500' : 'bg-blue-500'}"></div>
+                        <div class="flex justify-between items-start mb-1">
+                            <span class="text-[10px] font-black uppercase tracking-widest ${log.action === 'add' ? 'text-green-600' : 'text-blue-600'}">${log.action === 'add' ? 'Opprettet' : 'Endret'}</span>
+                            <span class="text-[10px] font-bold text-gray-400">${new Date(log.timestamp).toLocaleDateString('no-NO')}</span>
+                        </div>
+                        <p class="text-xs font-bold text-gray-900 mb-1">${log.username || 'Anonym (' + log.anon_hash + ')'}</p>
+                    `;
+                    historyList.appendChild(item);
+                });
+            })
+            .catch(err => {
+                console.error('Failed to fetch history:', err);
+                historyList.innerHTML = '<div class="text-xs text-red-500">Klarte ikke å hente historikk.</div>';
+            });
     }
 
     // 3. Fetch data

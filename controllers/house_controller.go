@@ -202,6 +202,18 @@ func LogoutHandler(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, r.Referer(), http.StatusSeeOther)
 }
 
+// APIHouseHistoryHandler returns the audit log for a specific house as JSON.
+func APIHouseHistoryHandler(w http.ResponseWriter, r *http.Request) {
+	id, _ := strconv.Atoi(r.URL.Query().Get("id"))
+	if id == 0 {
+		http.Error(w, "House ID required", http.StatusBadRequest)
+		return
+	}
+	logs := models.GetAuditLogsForHouse(id)
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(logs)
+}
+
 // HistoryHandler serves the audit log view.
 func HistoryHandler(w http.ResponseWriter, r *http.Request) {
 	logs := models.GetAuditLogs()

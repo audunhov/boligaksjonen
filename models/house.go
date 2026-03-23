@@ -250,8 +250,37 @@ func AddHouse(newHouse House, userID *int, anonHash string) int {
 	return int(id)
 }
 
-// GetAuditLogs returns all audit logs from the database.
-func GetAuditLogs() []AuditLog {
+// GetAuditLogsForHouse returns all audit logs for a specific house.
+func GetAuditLogsForHouse(houseID int) []AuditLog {
+	logs := []AuditLog{}
+	if db == nil {
+		return logs
+	}
+
+	query := `
+		SELECT al.id, al.house_id, al.action, al.old_data, al.new_data, al.user_id, al.anon_hash, al.timestamp, IFNULL(u.username, '') as username
+		FROM audit_log al
+		LEFT JOIN users u ON al.user_id = u.id
+		WHERE al.house_id = ?
+		ORDER BY al.timestamp DESC
+	`
+	rows, err := db.Query(query, houseID)
+	if err != nil {
+		slog.Error("Failed to query audit_log for house", "houseID", houseID, "error", err)
+		return logs
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var l AuditLog
+		if err := rows.Scan(&l.ID, &l.HouseID, &l.Action, &l.OldData, &l.NewData, &l.UserID, &l.AnonHash, &l.Timestamp, &l.Username); err != nil {
+			slog.Error("Failed to scan audit_log row", "error", err)
+			continue
+		}
+		logs = append(logs, l)
+	}
+	return logs
+}
 	logs := []AuditLog{}
 	if db == nil {
 		return logs
