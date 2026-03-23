@@ -24,7 +24,7 @@ type User struct {
 type AuditLog struct {
 	ID        int       `json:"id"`
 	HouseID   int       `json:"house_id"`
-	Action    string    `json:"action"` // "add", "update"
+	Action    string    `json:"action"` // "add", "update", "remove", "restore"
 	OldData   string    `json:"old_data"`
 	NewData   string    `json:"new_data"`
 	UserID    *int      `json:"user_id,omitempty"`
@@ -45,6 +45,7 @@ type House struct {
 	UpdatedAt     time.Time `json:"updated_at"`
 	UserID        *int      `json:"user_id,omitempty"`
 	AnonHash      string    `json:"anon_hash,omitempty"`
+	IsDeleted     bool      `json:"is_deleted"`
 	// Matrikkel fields for direct links
 	KommuneNr  string `json:"knr"`
 	GardsNr    int    `json:"gnr"`
@@ -91,6 +92,7 @@ func InitDB(filepath string) error {
 			bnr INTEGER,
 			fnr INTEGER,
 			snr INTEGER,
+			is_deleted INTEGER DEFAULT 0,
 			FOREIGN KEY (user_id) REFERENCES users(id)
 		);`,
 		`CREATE TABLE IF NOT EXISTS audit_log (
@@ -140,8 +142,9 @@ func GetAllHouses() []House {
 	}
 
 	rows, err := db.Query(`
-		SELECT id, address, latitude, longitude, description, ownership_type, last_updated_by, updated_at, user_id, anon_hash, IFNULL(knr, ''), IFNULL(gnr, 0), IFNULL(bnr, 0), IFNULL(fnr, 0), IFNULL(snr, 0)
+		SELECT id, address, latitude, longitude, description, ownership_type, last_updated_by, updated_at, user_id, anon_hash, IFNULL(knr, ''), IFNULL(gnr, 0), IFNULL(bnr, 0), IFNULL(fnr, 0), IFNULL(snr, 0), is_deleted
 		FROM houses
+		WHERE is_deleted = 0
 	`)
 	if err != nil {
 		slog.Error("Failed to query houses", "error", err)
@@ -151,7 +154,7 @@ func GetAllHouses() []House {
 
 	for rows.Next() {
 		var h House
-		if err := rows.Scan(&h.ID, &h.Address, &h.Latitude, &h.Longitude, &h.Description, &h.OwnershipType, &h.LastUpdatedBy, &h.UpdatedAt, &h.UserID, &h.AnonHash, &h.KommuneNr, &h.GardsNr, &h.BruksNr, &h.FesteNr, &h.SeksjonsNr); err != nil {
+		if err := rows.Scan(&h.ID, &h.Address, &h.Latitude, &h.Longitude, &h.Description, &h.OwnershipType, &h.LastUpdatedBy, &h.UpdatedAt, &h.UserID, &h.AnonHash, &h.KommuneNr, &h.GardsNr, &h.BruksNr, &h.FesteNr, &h.SeksjonsNr, &h.IsDeleted); err != nil {
 			slog.Error("Failed to scan house row", "error", err)
 			continue
 		}
@@ -168,11 +171,11 @@ func GetHouseByID(id int) (House, error) {
 	}
 
 	query := `
-		SELECT id, address, latitude, longitude, description, ownership_type, last_updated_by, updated_at, user_id, anon_hash, IFNULL(knr, ''), IFNULL(gnr, 0), IFNULL(bnr, 0), IFNULL(fnr, 0), IFNULL(snr, 0)
+		SELECT id, address, latitude, longitude, description, ownership_type, last_updated_by, updated_at, user_id, anon_hash, IFNULL(knr, ''), IFNULL(gnr, 0), IFNULL(bnr, 0), IFNULL(fnr, 0), IFNULL(snr, 0), is_deleted
 		FROM houses WHERE id = ?
 	`
 	row := db.QueryRow(query, id)
-	err := row.Scan(&h.ID, &h.Address, &h.Latitude, &h.Longitude, &h.Description, &h.OwnershipType, &h.LastUpdatedBy, &h.UpdatedAt, &h.UserID, &h.AnonHash, &h.KommuneNr, &h.GardsNr, &h.BruksNr, &h.FesteNr, &h.SeksjonsNr)
+	err := row.Scan(&h.ID, &h.Address, &h.Latitude, &h.Longitude, &h.Description, &h.OwnershipType, &h.LastUpdatedBy, &h.UpdatedAt, &h.UserID, &h.AnonHash, &h.KommuneNr, &h.GardsNr, &h.BruksNr, &h.FesteNr, &h.SeksjonsNr, &h.IsDeleted)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return h, errors.New("house not found")
@@ -202,10 +205,10 @@ func UpdateHouse(updated House, userID *int, anonHash string) error {
 
 	query := `
 		UPDATE houses 
-		SET address = ?, latitude = ?, longitude = ?, description = ?, ownership_type = ?, last_updated_by = ?, updated_at = ?, user_id = ?, anon_hash = ?, knr = ?, gnr = ?, bnr = ?, fnr = ?, snr = ?
+		SET address = ?, latitude = ?, longitude = ?, description = ?, ownership_type = ?, last_updated_by = ?, updated_at = ?, user_id = ?, anon_hash = ?, knr = ?, gnr = ?, bnr = ?, fnr = ?, snr = ?, is_deleted = ?
 		WHERE id = ?
 	`
-	_, err = db.Exec(query, updated.Address, updated.Latitude, updated.Longitude, updated.Description, updated.OwnershipType, updated.LastUpdatedBy, updated.UpdatedAt, userID, anonHash, updated.KommuneNr, updated.GardsNr, updated.BruksNr, updated.FesteNr, updated.SeksjonsNr, updated.ID)
+	_, err = db.Exec(query, updated.Address, updated.Latitude, updated.Longitude, updated.Description, updated.OwnershipType, updated.LastUpdatedBy, updated.UpdatedAt, userID, anonHash, updated.KommuneNr, updated.GardsNr, updated.BruksNr, updated.FesteNr, updated.SeksjonsNr, updated.IsDeleted, updated.ID)
 	if err != nil {
 		return fmt.Errorf("failed to update house: %w", err)
 	}
@@ -235,10 +238,10 @@ func AddHouse(newHouse House, userID *int, anonHash string) int {
 	}
 
 	query := `
-		INSERT INTO houses (address, latitude, longitude, description, ownership_type, last_updated_by, updated_at, user_id, anon_hash, knr, gnr, bnr, fnr, snr)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+		INSERT INTO houses (address, latitude, longitude, description, ownership_type, last_updated_by, updated_at, user_id, anon_hash, knr, gnr, bnr, fnr, snr, is_deleted)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 	`
-	result, err := db.Exec(query, newHouse.Address, newHouse.Latitude, newHouse.Longitude, newHouse.Description, newHouse.OwnershipType, newHouse.LastUpdatedBy, newHouse.UpdatedAt, userID, anonHash, newHouse.KommuneNr, newHouse.GardsNr, newHouse.BruksNr, newHouse.FesteNr, newHouse.SeksjonsNr)
+	result, err := db.Exec(query, newHouse.Address, newHouse.Latitude, newHouse.Longitude, newHouse.Description, newHouse.OwnershipType, newHouse.LastUpdatedBy, newHouse.UpdatedAt, userID, anonHash, newHouse.KommuneNr, newHouse.GardsNr, newHouse.BruksNr, newHouse.FesteNr, newHouse.SeksjonsNr, newHouse.IsDeleted)
 	if err != nil {
 		slog.Error("Failed to insert house", "error", err)
 		return 0
@@ -259,6 +262,55 @@ func AddHouse(newHouse House, userID *int, anonHash string) int {
 	}
 
 	return int(id)
+}
+
+// RemoveHouse marks a house as deleted.
+func RemoveHouse(id int, userID *int, anonHash string) error {
+	if db == nil {
+		return errors.New("database not initialized")
+	}
+
+	house, err := GetHouseByID(id)
+	if err != nil {
+		return err
+	}
+	oldJSON, _ := json.Marshal(house)
+
+	_, err = db.Exec("UPDATE houses SET is_deleted = 1 WHERE id = ?", id)
+	if err != nil {
+		return err
+	}
+
+	// Log the change
+	logQuery := `
+		INSERT INTO audit_log (house_id, action, old_data, new_data, user_id, anon_hash, timestamp)
+		VALUES (?, ?, ?, ?, ?, ?, ?)
+	`
+	_, err = db.Exec(logQuery, id, "remove", string(oldJSON), nil, userID, anonHash, time.Now())
+	return err
+}
+
+// RestoreHouse restores a deleted house.
+func RestoreHouse(id int, userID *int, anonHash string) error {
+	if db == nil {
+		return errors.New("database not initialized")
+	}
+
+	_, err := db.Exec("UPDATE houses SET is_deleted = 0 WHERE id = ?", id)
+	if err != nil {
+		return err
+	}
+
+	house, _ := GetHouseByID(id)
+	newJSON, _ := json.Marshal(house)
+
+	// Log the change
+	logQuery := `
+		INSERT INTO audit_log (house_id, action, old_data, new_data, user_id, anon_hash, timestamp)
+		VALUES (?, ?, ?, ?, ?, ?, ?)
+	`
+	_, err = db.Exec(logQuery, id, "restore", nil, string(newJSON), userID, anonHash, time.Now())
+	return err
 }
 
 // GetAuditLogs returns all audit logs from the database.

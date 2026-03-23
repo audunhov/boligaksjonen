@@ -219,6 +219,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('aside_description').innerHTML = house.description.replace(/\r\n/g, '<br>').replace(/\n/g, '<br>');
         document.getElementById('aside_author').innerText = house.last_updated_by;
         document.getElementById('aside_date').innerText = new Date(house.updated_at).toLocaleString('no-NO');
+        document.getElementById('remove_house_id').value = house.id;
         
         const badge = document.getElementById('aside_badge');
         const type = (house.ownership_type || 'annet').toLowerCase().trim();

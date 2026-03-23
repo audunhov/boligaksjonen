@@ -32,6 +32,8 @@ func main() {
 	http.HandleFunc("/api/houses/history", controllers.APIHouseHistoryHandler)
 	http.HandleFunc("/houses/edit", controllers.EditHandler)
 	http.HandleFunc("/houses/update", controllers.UpdateHandler)
+	http.HandleFunc("/houses/remove", controllers.RemoveHandler)
+	http.HandleFunc("/houses/restore", controllers.RestoreHandler)
 	http.HandleFunc("/signup", controllers.SignupHandler)
 	http.HandleFunc("/login", controllers.LoginHandler)
 	http.HandleFunc("/logout", controllers.LogoutHandler)

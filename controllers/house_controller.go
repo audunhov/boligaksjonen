@@ -153,6 +153,50 @@ func UpdateHandler(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/kart", http.StatusSeeOther)
 }
 
+// RemoveHandler handles the POST request to mark a house as deleted.
+func RemoveHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	id, _ := strconv.Atoi(r.URL.Query().Get("id"))
+	if id == 0 {
+		http.Error(w, "House ID required", http.StatusBadRequest)
+		return
+	}
+	userID := getLoggedInUserID(r)
+	anonHash := getFingerprint(r)
+	err := models.RemoveHouse(id, userID, anonHash)
+	if err != nil {
+		slog.Error("Failed to remove house", "error", err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+	http.Redirect(w, r, "/kart", http.StatusSeeOther)
+}
+
+// RestoreHandler handles the POST request to restore a deleted house.
+func RestoreHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	id, _ := strconv.Atoi(r.URL.Query().Get("id"))
+	if id == 0 {
+		http.Error(w, "House ID required", http.StatusBadRequest)
+		return
+	}
+	userID := getLoggedInUserID(r)
+	anonHash := getFingerprint(r)
+	err := models.RestoreHouse(id, userID, anonHash)
+	if err != nil {
+		slog.Error("Failed to restore house", "error", err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+	http.Redirect(w, r, "/kart/historikk", http.StatusSeeOther)
+}
+
 // SignupHandler handles user registration.
 func SignupHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
