@@ -1,7 +1,9 @@
 package controllers
 
 import (
+	"crypto/sha256"
 	"encoding/json"
+	"fmt"
 	"html/template"
 	"log/slog"
 	"net/http"
@@ -11,24 +13,46 @@ import (
 	"github.com/audunhov/tombolig/models"
 )
 
+// Helper to get anonymous fingerprint
+func getFingerprint(r *http.Request) string {
+	ip := r.RemoteAddr
+	ua := r.UserAgent()
+	hash := sha256.Sum256([]byte(ip + ua))
+	return fmt.Sprintf("%x", hash)[:8]
+}
+
+// Helper to get logged in user ID from session
+func getLoggedInUserID(r *http.Request) *int {
+	cookie, err := r.Cookie("user_id")
+	if err != nil {
+		return nil
+	}
+	id, err := strconv.Atoi(cookie.Value)
+	if err != nil {
+		return nil
+	}
+	return &id
+}
+
 // HomeHandler serves the landing page.
 func HomeHandler(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path != "/" {
 		http.NotFound(w, r)
 		return
 	}
-
 	tmpl, err := template.ParseFiles("views/home.html")
 	if err != nil {
 		slog.Error("Failed to parse home template", "error", err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
-
-	err = tmpl.Execute(w, nil)
-	if err != nil {
-		slog.Error("Failed to execute home template", "error", err)
+	
+	data := struct {
+		UserID *int
+	}{
+		UserID: getLoggedInUserID(r),
 	}
+	tmpl.Execute(w, data)
 }
 
 // MapHandler serves the interactive map page.
@@ -39,39 +63,173 @@ func MapHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
-
-	err = tmpl.Execute(w, nil)
-	if err != nil {
-		slog.Error("Failed to execute map template", "error", err)
+	
+	var username string
+	userID := getLoggedInUserID(r)
+	if userID != nil {
+		user, err := models.GetUserByID(*userID)
+		if err == nil {
+			username = user.Username
+		}
 	}
+
+	data := struct {
+		UserID   *int
+		Username string
+	}{
+		UserID:   userID,
+		Username: username,
+	}
+	tmpl.Execute(w, data)
 }
 
 // APIHousesHandler retrieves house data and returns it as JSON.
 func APIHousesHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet {
+	houses := models.GetAllHouses()
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
+	json.NewEncoder(w).Encode(houses)
+}
+
+// UpdateHandler handles the POST request to update or add a house.
+func UpdateHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
 
-	houses := models.GetAllHouses()
+	r.ParseForm()
+	id, _ := strconv.Atoi(r.FormValue("id"))
+	lat, _ := strconv.ParseFloat(r.FormValue("lat"), 64)
+	lng, _ := strconv.ParseFloat(r.FormValue("lng"), 64)
 
-	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
-	if err := json.NewEncoder(w).Encode(houses); err != nil {
-		slog.Error("Failed to encode JSON", "error", err)
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+	ownershipType := r.FormValue("ownership_type")
+	if ownershipType == "freetext" {
+		ownershipType = r.FormValue("ownership_freetext")
 	}
+
+	var author string
+	anonHash := getFingerprint(r)
+	userID := getLoggedInUserID(r)
+	
+	if userID != nil {
+		user, err := models.GetUserByID(*userID)
+		if err == nil {
+			author = user.Username
+		} else {
+			author = fmt.Sprintf("Anonym (%s)", anonHash)
+		}
+	} else {
+		author = fmt.Sprintf("Anonym (%s)", anonHash)
+	}
+
+	house := models.House{
+		ID:            id,
+		Address:       r.FormValue("address"),
+		Latitude:      lat,
+		Longitude:     lng,
+		Description:   r.FormValue("description"),
+		OwnershipType: ownershipType,
+		LastUpdatedBy: author,
+	}
+
+	if id == 0 {
+		models.AddHouse(house, userID, anonHash)
+	} else {
+		models.UpdateHouse(house, userID, anonHash)
+	}
+
+	http.Redirect(w, r, "/kart", http.StatusSeeOther)
 }
 
-// EditHandler serves the edit form for a house (legacy or if we want a direct page).
-func EditHandler(w http.ResponseWriter, r *http.Request) {
-	idStr := r.URL.Query().Get("id")
-	id, err := strconv.Atoi(idStr)
-	if err != nil {
-		http.Error(w, "Invalid house ID", http.StatusBadRequest)
+// SignupHandler handles user registration.
+func SignupHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
+	username := r.FormValue("username")
+	password := r.FormValue("password")
+	if username == "" || password == "" {
+		http.Error(w, "Username and password required", http.StatusBadRequest)
+		return
+	}
+	err := models.CreateUser(username, password)
+	if err != nil {
+		slog.Error("Failed to create user", "error", err)
+		http.Error(w, "Username already taken or other error", http.StatusConflict)
+		return
+	}
+	// Log in automatically after signup
+	user, _ := models.GetUserByUsername(username)
+	http.SetCookie(w, &http.Cookie{
+		Name:  "user_id",
+		Value: strconv.Itoa(user.ID),
+		Path:  "/",
+	})
+	http.Redirect(w, r, r.Referer(), http.StatusSeeOther)
+}
 
+// LoginHandler handles user login.
+func LoginHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	username := r.FormValue("username")
+	password := r.FormValue("password")
+	user, err := models.AuthenticateUser(username, password)
+	if err != nil {
+		http.Error(w, "Invalid username or password", http.StatusUnauthorized)
+		return
+	}
+	http.SetCookie(w, &http.Cookie{
+		Name:  "user_id",
+		Value: strconv.Itoa(user.ID),
+		Path:  "/",
+	})
+	http.Redirect(w, r, r.Referer(), http.StatusSeeOther)
+}
+
+// LogoutHandler handles user logout.
+func LogoutHandler(w http.ResponseWriter, r *http.Request) {
+	http.SetCookie(w, &http.Cookie{
+		Name:   "user_id",
+		Value:  "",
+		Path:   "/",
+		MaxAge: -1,
+	})
+	http.Redirect(w, r, r.Referer(), http.StatusSeeOther)
+}
+
+// HistoryHandler serves the audit log view.
+func HistoryHandler(w http.ResponseWriter, r *http.Request) {
+	logs := models.GetAuditLogs()
+	
+	funcMap := template.FuncMap{
+		"formatDate": func(t time.Time) string {
+			return t.Format("02.01.2006 15:04")
+		},
+		"getAuthor": func(l models.AuditLog) string {
+			if l.Username != "" {
+				return l.Username
+			}
+			return fmt.Sprintf("Anonym (%s)", l.AnonHash)
+		},
+	}
+
+	tmpl, err := template.New("history.html").Funcs(funcMap).ParseFiles("views/history.html")
+	if err != nil {
+		slog.Error("Failed to parse history template", "error", err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+	tmpl.Execute(w, logs)
+}
+
+// EditHandler serves the edit form for a house.
+func EditHandler(w http.ResponseWriter, r *http.Request) {
+	id, _ := strconv.Atoi(r.URL.Query().Get("id"))
 	house, err := models.GetHouseByID(id)
 	if err != nil {
 		http.Error(w, "House not found", http.StatusNotFound)
@@ -90,76 +248,5 @@ func EditHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
-
-	err = tmpl.Execute(w, house)
-	if err != nil {
-		slog.Error("Failed to execute template", "error", err)
-	}
-}
-
-// UpdateHandler handles the POST request to update or add a house.
-func UpdateHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
-	if err := r.ParseForm(); err != nil {
-		slog.Error("Failed to parse form", "error", err)
-		http.Error(w, "Failed to parse form", http.StatusBadRequest)
-		return
-	}
-
-	idStr := r.FormValue("id")
-	id, _ := strconv.Atoi(idStr) // id 0 means new house
-
-	lat, err := strconv.ParseFloat(r.FormValue("lat"), 64)
-	if err != nil {
-		slog.Error("Invalid latitude", "val", r.FormValue("lat"), "error", err)
-		http.Error(w, "Invalid latitude", http.StatusBadRequest)
-		return
-	}
-
-	lng, err := strconv.ParseFloat(r.FormValue("lng"), 64)
-	if err != nil {
-		slog.Error("Invalid longitude", "val", r.FormValue("lng"), "error", err)
-		http.Error(w, "Invalid longitude", http.StatusBadRequest)
-		return
-	}
-
-	ownershipType := r.FormValue("ownership_type")
-	if ownershipType == "freetext" {
-		ownershipType = r.FormValue("ownership_freetext")
-	}
-
-	author := r.FormValue("author")
-	if author == "" {
-		author = "Anonymous"
-	}
-
-	house := models.House{
-		ID:            id,
-		Address:       r.FormValue("address"),
-		Latitude:      lat,
-		Longitude:     lng,
-		Description:   r.FormValue("description"),
-		OwnershipType: ownershipType,
-		LastUpdatedBy: author,
-		UpdatedAt:     time.Now(),
-	}
-
-	if id == 0 {
-		slog.Info("Adding new house", "address", house.Address)
-		models.AddHouse(house)
-	} else {
-		slog.Info("Updating house", "id", id, "address", house.Address)
-		if err := models.UpdateHouse(house); err != nil {
-			slog.Error("Failed to update house in model", "id", id, "error", err)
-			http.Error(w, "Failed to update house: "+err.Error(), http.StatusInternalServerError)
-			return
-		}
-	}
-
-	// Redirect back to the map
-	http.Redirect(w, r, "/kart", http.StatusSeeOther)
+	tmpl.Execute(w, house)
 }

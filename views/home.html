@@ -96,8 +96,60 @@
     <div class="container">
         <header>
             <a href="/" class="logo">Tom Bolig</a>
+            <div style="float: right;">
+                {{if .UserID}}
+                    <a href="/logout" class="btn" style="padding: 10px 20px; font-size: 0.9rem;">Logg ut</a>
+                {{else}}
+                    <button class="btn" style="padding: 10px 20px; font-size: 0.9rem;" onclick="document.getElementById('loginDialog').showModal()">Logg inn</button>
+                    <button class="btn" style="padding: 10px 20px; font-size: 0.9rem;" onclick="document.getElementById('signupDialog').showModal()">Registrer</button>
+                {{end}}
+            </div>
         </header>
     </div>
+
+    <!-- Login Dialog -->
+    <dialog id="loginDialog" style="border: none; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); padding: 0; width: 90%; max-width: 400px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #ddd; padding: 15px 20px; background: #f8f9fa;">
+            <h2 style="margin: 0; font-size: 1.25em;">Logg inn</h2>
+            <button style="background:none; border:none; color:#666; font-size:1.5em; cursor:pointer;" onclick="document.getElementById('loginDialog').close()">&times;</button>
+        </div>
+        <form action="/login" method="POST" style="padding: 20px;">
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; font-weight: bold; margin-bottom: 5px;">Brukernavn</label>
+                <input type="text" name="username" required style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
+            </div>
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; font-weight: bold; margin-bottom: 5px;">Passord</label>
+                <input type="password" name="password" required style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
+            </div>
+            <div style="text-align: right; margin-top: 20px;">
+                <button type="button" style="padding: 8px 16px; border: none; background: #95a5a6; color: white; border-radius: 4px; cursor: pointer; margin-right: 8px;" onclick="document.getElementById('loginDialog').close()">Avbryt</button>
+                <button type="submit" style="padding: 8px 16px; border: none; background: #3498db; color: white; border-radius: 4px; cursor: pointer;">Logg inn</button>
+            </div>
+        </form>
+    </dialog>
+
+    <!-- Signup Dialog -->
+    <dialog id="signupDialog" style="border: none; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); padding: 0; width: 90%; max-width: 400px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #ddd; padding: 15px 20px; background: #f8f9fa;">
+            <h2 style="margin: 0; font-size: 1.25em;">Registrer</h2>
+            <button style="background:none; border:none; color:#666; font-size:1.5em; cursor:pointer;" onclick="document.getElementById('signupDialog').close()">&times;</button>
+        </div>
+        <form action="/signup" method="POST" style="padding: 20px;">
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; font-weight: bold; margin-bottom: 5px;">Brukernavn</label>
+                <input type="text" name="username" required style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
+            </div>
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; font-weight: bold; margin-bottom: 5px;">Passord</label>
+                <input type="password" name="password" required style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
+            </div>
+            <div style="text-align: right; margin-top: 20px;">
+                <button type="button" style="padding: 8px 16px; border: none; background: #95a5a6; color: white; border-radius: 4px; cursor: pointer; margin-right: 8px;" onclick="document.getElementById('signupDialog').close()">Avbryt</button>
+                <button type="submit" style="padding: 8px 16px; border: none; background: #3498db; color: white; border-radius: 4px; cursor: pointer;">Registrer</button>
+            </div>
+        </form>
+    </dialog>
 
     <section class="hero">
         <div class="container">

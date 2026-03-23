@@ -47,13 +47,65 @@
     <div class="header">
         <h1>Tom Bolig</h1>
         <p>Vi synes ingen boliger burde stå tomme!</p>
-        <div style="display: flex; gap: 10px; margin-top: 10px;">
+        <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px;">
             <button class="btn btn-primary" onclick="openAddModal()">Report Empty House</button>
+            <a href="/kart/historikk" class="btn btn-secondary" style="text-decoration: none; padding: 10px 15px; display: inline-block;">Historikk</a>
             <a href="/" class="btn btn-secondary" style="text-decoration: none; padding: 10px 15px; display: inline-block;">Back to Home</a>
+            {{if .UserID}}
+                <span style="align-self: center; margin-left: 10px;">Logged in as <strong>{{.Username}}</strong></span>
+                <a href="/logout" class="btn btn-secondary" style="text-decoration: none; padding: 10px 15px; display: inline-block;">Logout</a>
+            {{else}}
+                <button class="btn btn-secondary" onclick="document.getElementById('loginDialog').showModal()">Login</button>
+                <button class="btn btn-secondary" onclick="document.getElementById('signupDialog').showModal()">Signup</button>
+            {{end}}
         </div>
     </div>
     
     <div id="map"></div>
+
+    <!-- Login Dialog -->
+    <dialog id="loginDialog">
+        <div class="dialog-header">
+            <h2>Login</h2>
+            <button class="btn" style="background:none; color:#666; font-size:1.5em; padding:0;" onclick="document.getElementById('loginDialog').close()">&times;</button>
+        </div>
+        <form action="/login" method="POST">
+            <div class="form-group">
+                <label for="login_username">Username</label>
+                <input type="text" id="login_username" name="username" required>
+            </div>
+            <div class="form-group">
+                <label for="login_password">Password</label>
+                <input type="password" id="login_password" name="password" required style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
+            </div>
+            <div class="dialog-actions">
+                <button type="button" class="btn btn-secondary" onclick="document.getElementById('loginDialog').close()">Cancel</button>
+                <button type="submit" class="btn btn-primary">Login</button>
+            </div>
+        </form>
+    </dialog>
+
+    <!-- Signup Dialog -->
+    <dialog id="signupDialog">
+        <div class="dialog-header">
+            <h2>Signup</h2>
+            <button class="btn" style="background:none; color:#666; font-size:1.5em; padding:0;" onclick="document.getElementById('signupDialog').close()">&times;</button>
+        </div>
+        <form action="/signup" method="POST">
+            <div class="form-group">
+                <label for="signup_username">Username</label>
+                <input type="text" id="signup_username" name="username" required>
+            </div>
+            <div class="form-group">
+                <label for="signup_password">Password</label>
+                <input type="password" id="signup_password" name="password" required style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
+            </div>
+            <div class="dialog-actions">
+                <button type="button" class="btn btn-secondary" onclick="document.getElementById('signupDialog').close()">Cancel</button>
+                <button type="submit" class="btn btn-primary">Signup</button>
+            </div>
+        </form>
+    </dialog>
 
     <!-- Edit Dialog -->
     <dialog id="editDialog">
@@ -105,11 +157,6 @@
             <div class="form-group">
                 <label for="edit_description">Description</label>
                 <textarea id="edit_description" name="description" required></textarea>
-            </div>
-
-            <div class="form-group">
-                <label for="edit_author">Your Name (optional)</label>
-                <input type="text" id="edit_author" name="author" placeholder="Anonymous">
             </div>
 
             <div class="dialog-actions">

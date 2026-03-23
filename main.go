@@ -27,9 +27,13 @@ func main() {
 	// Register routes
 	http.HandleFunc("/", controllers.HomeHandler)
 	http.HandleFunc("/kart", controllers.MapHandler)
+	http.HandleFunc("/kart/historikk", controllers.HistoryHandler)
 	http.HandleFunc("/api/houses", controllers.APIHousesHandler)
 	http.HandleFunc("/houses/edit", controllers.EditHandler)
 	http.HandleFunc("/houses/update", controllers.UpdateHandler)
+	http.HandleFunc("/signup", controllers.SignupHandler)
+	http.HandleFunc("/login", controllers.LoginHandler)
+	http.HandleFunc("/logout", controllers.LogoutHandler)
 
 	// Start server
 	port := ":8080"
