@@ -1,80 +1,179 @@
 // Initialize the map centered on Oslo
-const map = L.map('map').setView([59.9139, 10.7522], 13);
+document.addEventListener('DOMContentLoaded', () => {
+    // 1. Initialize Leaflet
+    const map = L.map('map').setView([59.9139, 10.7522], 13);
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+    }).addTo(map);
 
-// Add OpenStreetMap tile layer
-L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 19,
-    attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-}).addTo(map);
+    const markers = L.markerClusterGroup();
+    let allHouses = [];
 
-// Create a marker cluster group
-const markers = L.markerClusterGroup();
-let allHouses = []; // Store houses globally for modal access
-
-// Function to open the edit modal
-window.openEditModal = function(id) {
-    const house = allHouses.find(h => h.id === id);
-    if (!house) return;
-
-    document.getElementById('edit_id').value = house.id;
-    document.getElementById('edit_address').value = house.address;
-    document.getElementById('edit_lat').value = house.lat;
-    document.getElementById('edit_lng').value = house.lng;
-    document.getElementById('edit_description').value = house.description;
-    
-    const standardTypes = ['kommune', 'fylke', 'stat', 'privatperson', 'selskap'];
-    if (standardTypes.includes(house.ownership_type)) {
-        document.getElementById('edit_ownership_type').value = house.ownership_type;
-        document.getElementById('edit_freetext_group').style.display = 'none';
-        document.getElementById('edit_ownership_freetext').value = '';
-    } else {
-        document.getElementById('edit_ownership_type').value = 'freetext';
-        document.getElementById('edit_freetext_group').style.display = 'block';
-        document.getElementById('edit_ownership_freetext').value = house.ownership_type;
+    // 2. Define global UI helpers
+    window.openAddModal = function() {
+        document.getElementById('editForm').reset();
+        document.getElementById('edit_id').value = "0";
+        document.getElementById('dialog_title').innerText = "Rapporter tom bolig";
+        document.getElementById('edit_freetext_group').classList.add('hidden');
+        document.getElementById('lookup_status').innerText = '';
+        document.getElementById('editDialog').showModal();
     }
 
-    document.getElementById('editDialog').showModal();
-};
+    window.openEditModal = function(id) {
+        const house = allHouses.find(h => h.id === id);
+        if (!house) return;
 
-// Fetch house data from the API
-fetch('/api/houses')
-    .then(response => {
-        if (!response.ok) {
-            throw new Error('Network response was not ok');
+        document.getElementById('edit_id').value = house.id;
+        document.getElementById('edit_address').value = house.address;
+        document.getElementById('edit_lat').value = house.lat;
+        document.getElementById('edit_lng').value = house.lng;
+        document.getElementById('edit_description').value = house.description;
+        
+        const standardTypes = ['privat-bolig', 'privat-bygård', 'offentlig', 'næring', 'industri', 'gård', 'annet'];
+        if (standardTypes.includes(house.ownership_type)) {
+            document.getElementById('edit_ownership_type').value = house.ownership_type;
+            document.getElementById('edit_freetext_group').classList.add('hidden');
+        } else {
+            document.getElementById('edit_ownership_type').value = 'freetext';
+            document.getElementById('edit_freetext_group').classList.remove('hidden');
+            document.getElementById('edit_ownership_freetext').value = house.ownership_type;
         }
-        return response.json();
-    })
-    .then(houses => {
-        allHouses = houses;
-        // Iterate over the data and add markers to the cluster group
-        houses.forEach(house => {
-            const marker = L.marker([house.latitude, house.longitude]);
+        document.getElementById('editDialog').showModal();
+    };
 
-            // Handle marker click to show details in sidebar
-            marker.on('click', () => {
-                showHouseDetails(house);
+    window.toggleFreetext = function(value) {
+        const freetextGroup = document.getElementById('edit_freetext_group');
+        if (value === 'freetext') {
+            freetextGroup.classList.remove('hidden');
+        } else {
+            freetextGroup.classList.add('hidden');
+        }
+    }
+
+    window.lookupCoordinatesHeader = async function(address) {
+        const resultsDiv = document.getElementById('header_lookup_results');
+        if (!address) {
+            resultsDiv.classList.add('hidden');
+            return;
+        }
+
+        try {
+            const response = await fetch(`https://ws.geonorge.no/adresser/v1/sok?sok=${encodeURIComponent(address)}&treffPerSide=10`);
+            const data = await response.json();
+
+            if (data.adresser && data.adresser.length > 0) {
+                resultsDiv.classList.remove('hidden');
+                resultsDiv.innerHTML = '';
+                data.adresser.forEach(addr => {
+                    const item = document.createElement('div');
+                    item.className = 'p-4 cursor-pointer border-b border-gray-50 hover:bg-blue-50 transition-colors text-sm last:border-none flex justify-between items-center';
+                    item.innerHTML = `<div><span class="font-bold text-gray-900">${addr.adressetekst}</span><span class="text-gray-400 ml-2">${addr.poststed}</span></div><span class="text-[10px] font-black text-blue-600 uppercase tracking-widest">Velg</span>`;
+                    item.onclick = () => {
+                        resultsDiv.classList.add('hidden');
+                        window.openAddModal();
+                        window.selectAddress(addr);
+                    };
+                    resultsDiv.appendChild(item);
+                });
+            }
+        } catch (error) {
+            console.error('Header lookup error:', error);
+        }
+    }
+
+    window.lookupCoordinates = async function() {
+        const address = document.getElementById('edit_address').value;
+        const statusDiv = document.getElementById('lookup_status');
+        const resultsDiv = document.getElementById('lookup_results');
+        
+        if (!address) {
+            statusDiv.innerText = 'Vennligst skriv inn en adresse.';
+            statusDiv.classList.add('text-red-500');
+            return;
+        }
+
+        statusDiv.innerText = 'Slår opp...';
+        statusDiv.classList.remove('text-red-500', 'text-green-500');
+        resultsDiv.classList.add('hidden');
+        resultsDiv.innerHTML = '';
+
+        try {
+            const response = await fetch(`https://ws.geonorge.no/adresser/v1/sok?sok=${encodeURIComponent(address)}&treffPerSide=10`);
+            const data = await response.json();
+
+            if (data.adresser && data.adresser.length > 0) {
+                statusDiv.innerText = `Fant ${data.adresser.length} resultater:`;
+                resultsDiv.classList.remove('hidden');
+                data.adresser.forEach(addr => {
+                    const item = document.createElement('div');
+                    item.className = 'p-3 cursor-pointer border-b border-gray-50 hover:bg-blue-50 transition-colors text-xs last:border-none';
+                    item.innerHTML = `<span class="font-bold text-gray-800">${addr.adressetekst}</span> <span class="text-gray-500 ml-1">${addr.poststed}</span>`;
+                    item.onclick = () => window.selectAddress(addr);
+                    resultsDiv.appendChild(item);
+                });
+            } else {
+                statusDiv.innerText = 'Ingen adresser funnet.';
+                statusDiv.classList.add('text-red-500');
+            }
+        } catch (error) {
+            statusDiv.innerText = 'Tilkoblingsfeil.';
+            statusDiv.classList.add('text-red-500');
+        }
+    }
+
+    window.selectAddress = function(addr) {
+        document.getElementById('edit_address').value = addr.adressetekst;
+        document.getElementById('edit_lat').value = addr.representasjonspunkt.lat;
+        document.getElementById('edit_lng').value = addr.representasjonspunkt.lon;
+        const statusDiv = document.getElementById('lookup_status');
+        const resultsDiv = document.getElementById('lookup_results');
+        statusDiv.innerText = `Valgt: ${addr.adressetekst}`;
+        statusDiv.classList.add('text-green-500');
+        resultsDiv.classList.add('hidden');
+    }
+
+    window.showHouseDetails = function(house) {
+        const placeholder = document.getElementById('aside_placeholder');
+        const content = document.getElementById('aside_content');
+        
+        if (placeholder) placeholder.classList.add('hidden');
+        if (content) content.classList.remove('hidden');
+        
+        document.getElementById('aside_address').innerText = house.address;
+        document.getElementById('aside_description').innerHTML = house.description.replace(/\r\n/g, '<br>').replace(/\n/g, '<br>');
+        document.getElementById('aside_author').innerText = house.last_updated_by;
+        document.getElementById('aside_date').innerText = new Date(house.updated_at).toLocaleString('no-NO');
+        
+        const badge = document.getElementById('aside_badge');
+        const type = (house.ownership_type || 'annet').toLowerCase().trim();
+        const colors = {
+            'privat-bolig': 'bg-green-100 text-green-700',
+            'privat-bygård': 'bg-green-100 text-green-700',
+            'offentlig': 'bg-blue-100 text-blue-700',
+            'næring': 'bg-yellow-100 text-yellow-800',
+            'industri': 'bg-gray-100 text-gray-700',
+            'gård': 'bg-orange-100 text-orange-800',
+            'annet': 'bg-gray-100 text-gray-500'
+        };
+        badge.innerHTML = `<span class="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest ${colors[type] || 'bg-gray-100 text-gray-500'}">${type.replace('-', ' ')}</span>`;
+        document.getElementById('aside_edit_btn').onclick = () => window.openEditModal(house.id);
+    }
+
+    // 3. Fetch data
+    fetch('/api/houses')
+        .then(res => res.json())
+        .then(houses => {
+            allHouses = houses;
+            houses.forEach(h => {
+                // IMPORTANT: Use JSON tag names 'lat' and 'lng'
+                const m = L.marker([h.lat, h.lng]);
+                m.on('click', () => window.showHouseDetails(h));
+                m.bindPopup(`<b class="text-gray-900">${h.address}</b><br><span class="text-[10px] font-black uppercase text-blue-600">${h.ownership_type.replace('-', ' ')}</span>`);
+                markers.addLayer(m);
             });
-
-            // Keep popup as a fallback/quick-view if desired, or remove it
-            const formattedDescription = house.description.replace(/\r\n/g, '<br>').replace(/\n/g, '<br>');
-            const popupContent = `
-                <div class="p-1">
-                    <b class="text-gray-900">${house.address}</b><br>
-                    <span class="text-[10px] font-bold uppercase text-blue-600">${house.ownership_type.replace('-', ' ')}</span>
-                </div>
-            `;
-            marker.bindPopup(popupContent);
-
-            markers.addLayer(marker);
+            map.addLayer(markers);
         });
 
-            
-            markers.addLayer(marker);
-        });
-
-        // Add the cluster group to the map
-        map.addLayer(markers);
-    })
-    .catch(error => {
-        console.error('There was a problem fetching the house data:', error);
-    });
+    setTimeout(() => map.invalidateSize(), 100);
+});
