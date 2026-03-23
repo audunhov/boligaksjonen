@@ -17,7 +17,7 @@
     
     <style>
         #map { height: 100%; width: 100%; z-index: 1; }
-        .leaflet-container { font-family: inherit; }
+        .leaflet-container { font-family: inherit; height: 100% !important; width: 100% !important; }
         dialog::backdrop { background: rgba(0,0,0,0.5); backdrop-filter: blur(2px); }
         .lookup-item:hover { background: #f8fafc; }
 
@@ -80,9 +80,9 @@
 </head>
 <body class="h-full overflow-hidden">
     <!-- Main Map View (Full Screen) -->
-    <div class="flex h-full overflow-hidden relative">
-        <main class="flex-1 relative">
-            <div id="map"></div>
+    <div class="flex h-full min-h-0 overflow-hidden relative">
+        <main class="flex-1 relative min-h-0">
+            <div id="map" class="h-full w-full"></div>
 
             <!-- Floating Header (Now Absolute to Map Container) -->
             <div class="absolute top-4 left-0 right-0 z-[1000] px-2 sm:px-4 pointer-events-none">
