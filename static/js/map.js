@@ -309,22 +309,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
     window.submitComment = function(e) {
         e.preventDefault();
-        const form = document.getElementById('commentForm');
         const houseID = document.getElementById('comment_house_id').value;
         const comment = document.getElementById('comment_text').value;
         if (!comment) return;
 
-        const formData = new FormData();
-        formData.append('house_id', houseID);
-        formData.append('comment', comment);
+        const params = new URLSearchParams();
+        params.append('house_id', houseID);
+        params.append('comment', comment);
 
         fetch('/api/houses/comment', {
             method: 'POST',
-            body: formData
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: params
         }).then(res => {
             if (res.ok) {
                 document.getElementById('comment_text').value = '';
                 window.refreshHistory(houseID);
+            } else {
+                console.error("Failed to post comment:", res.statusText);
             }
         });
     }
