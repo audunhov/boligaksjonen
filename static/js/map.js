@@ -5,14 +5,12 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Define Base Layers
     const topo = L.tileLayer('https://cache.kartverket.no/v1/wmts/1.0.0/topo/default/webmercator/{z}/{y}/{x}.png', {
-        maxZoom: 20,
-        maxNativeZoom: 18,
+        maxZoom: 18,
         attribution: '&copy; <a href="http://www.kartverket.no/">Kartverket</a>'
     });
 
     const detailed = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 20,
-        maxNativeZoom: 19,
+        maxZoom: 19,
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
     });
 
