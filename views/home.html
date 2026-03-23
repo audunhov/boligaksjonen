@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tom Bolig - Vi synes ingen boliger burde stå tomme!</title>
+    <style>
+        :root {
+            --primary: #3498db;
+            --dark: #2c3e50;
+            --light: #ecf0f1;
+        }
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: var(--dark);
+            background-color: #fff;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        header {
+            padding: 20px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary);
+            text-decoration: none;
+        }
+        .hero {
+            padding: 100px 0;
+            text-align: center;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        }
+        .hero h1 {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            color: var(--dark);
+        }
+        .hero p {
+            font-size: 1.25rem;
+            max-width: 600px;
+            margin: 0 auto 40px;
+            color: #555;
+        }
+        .btn {
+            display: inline-block;
+            padding: 15px 35px;
+            background-color: var(--primary);
+            color: white;
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
+        }
+        .mission {
+            padding: 80px 0;
+        }
+        .mission h2 {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 40px;
+        }
+        .card {
+            padding: 30px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            border-top: 4px solid var(--primary);
+        }
+        footer {
+            padding: 40px 0;
+            background: var(--dark);
+            color: white;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <a href="/" class="logo">Tom Bolig</a>
+        </header>
+    </div>
+
+    <section class="hero">
+        <div class="container">
+            <h1>Vi synes ingen boliger burde stå tomme!</h1>
+            <p>Bli med på dugnaden for å kartlegge tomme boliger i ditt lokalsamfunn. Sammen kan vi skape mer liv i gatene våre.</p>
+            <a href="/kart" class="btn">Utforsk kartet</a>
+        </div>
+    </section>
+
+    <section class="mission">
+        <div class="container">
+            <h2>Hvorfor gjør vi dette?</h2>
+            <div class="grid">
+                <div class="card">
+                    <h3>Synliggjøring</h3>
+                    <p>Mange boliger står tomme mens folk leter etter et sted å bo. Vi ønsker å vise omfanget av dette problemet.</p>
+                </div>
+                <div class="card">
+                    <h3>Folkeforskning</h3>
+                    <p>Dette er et wiki-prosjekt. Alle kan bidra med informasjon om boliger de vet står tomme.</p>
+                </div>
+                <div class="card">
+                    <h3>Lokalt engasjement</h3>
+                    <p>Ved å kartlegge tomme bygg kan vi starte en dialog om hvordan de kan tas i bruk igjen.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2026 Tom Bolig - Et dugnadsprosjekt for levende nabolag.</p>
+        </div>
+    </footer>
+</body>
+</html>

@@ -25,7 +25,8 @@ func main() {
 	http.Handle("/static/", http.StripPrefix("/static/", fs))
 
 	// Register routes
-	http.HandleFunc("/", controllers.IndexHandler)
+	http.HandleFunc("/", controllers.HomeHandler)
+	http.HandleFunc("/kart", controllers.MapHandler)
 	http.HandleFunc("/api/houses", controllers.APIHousesHandler)
 	http.HandleFunc("/houses/edit", controllers.EditHandler)
 	http.HandleFunc("/houses/update", controllers.UpdateHandler)

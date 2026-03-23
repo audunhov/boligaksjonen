@@ -47,7 +47,10 @@
     <div class="header">
         <h1>Tom Bolig</h1>
         <p>Vi synes ingen boliger burde stå tomme!</p>
-        <button class="btn btn-primary" style="margin-top: 10px;" onclick="openAddModal()">Report Empty House</button>
+        <div style="display: flex; gap: 10px; margin-top: 10px;">
+            <button class="btn btn-primary" onclick="openAddModal()">Report Empty House</button>
+            <a href="/" class="btn btn-secondary" style="text-decoration: none; padding: 10px 15px; display: inline-block;">Back to Home</a>
+        </div>
     </div>
     
     <div id="map"></div>

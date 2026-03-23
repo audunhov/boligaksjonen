@@ -11,23 +11,38 @@ import (
 	"github.com/audunhov/tombolig/models"
 )
 
-// IndexHandler serves the main HTML page containing the map.
-func IndexHandler(w http.ResponseWriter, r *http.Request) {
+// HomeHandler serves the landing page.
+func HomeHandler(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path != "/" {
 		http.NotFound(w, r)
 		return
 	}
 
-	tmpl, err := template.ParseFiles("views/index.html")
+	tmpl, err := template.ParseFiles("views/home.html")
 	if err != nil {
-		slog.Error("Failed to parse template", "error", err)
+		slog.Error("Failed to parse home template", "error", err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
 
 	err = tmpl.Execute(w, nil)
 	if err != nil {
-		slog.Error("Failed to execute template", "error", err)
+		slog.Error("Failed to execute home template", "error", err)
+	}
+}
+
+// MapHandler serves the interactive map page.
+func MapHandler(w http.ResponseWriter, r *http.Request) {
+	tmpl, err := template.ParseFiles("views/index.html")
+	if err != nil {
+		slog.Error("Failed to parse map template", "error", err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+
+	err = tmpl.Execute(w, nil)
+	if err != nil {
+		slog.Error("Failed to execute map template", "error", err)
 	}
 }
 
@@ -48,7 +63,7 @@ func APIHousesHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// EditHandler serves the edit form for a house.
+// EditHandler serves the edit form for a house (legacy or if we want a direct page).
 func EditHandler(w http.ResponseWriter, r *http.Request) {
 	idStr := r.URL.Query().Get("id")
 	id, err := strconv.Atoi(idStr)
@@ -82,7 +97,7 @@ func EditHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// UpdateHandler handles the POST request to update a house.
+// UpdateHandler handles the POST request to update or add a house.
 func UpdateHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -145,5 +160,6 @@ func UpdateHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	http.Redirect(w, r, "/", http.StatusSeeOther)
+	// Redirect back to the map
+	http.Redirect(w, r, "/kart", http.StatusSeeOther)
 }
