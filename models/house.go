@@ -269,7 +269,7 @@ func GetAuditLogs() []AuditLog {
 	}
 
 	query := `
-		SELECT al.id, al.house_id, al.action, al.old_data, al.new_data, al.user_id, al.anon_hash, al.timestamp, IFNULL(u.username, '') as username
+		SELECT al.id, al.house_id, al.action, IFNULL(al.old_data, '') as old_data, IFNULL(al.new_data, '') as new_data, al.user_id, al.anon_hash, al.timestamp, IFNULL(u.username, '') as username
 		FROM audit_log al
 		LEFT JOIN users u ON al.user_id = u.id
 		ORDER BY al.timestamp DESC
@@ -300,7 +300,7 @@ func GetAuditLogsForHouse(houseID int) []AuditLog {
 	}
 
 	query := `
-		SELECT al.id, al.house_id, al.action, al.old_data, al.new_data, al.user_id, al.anon_hash, al.timestamp, IFNULL(u.username, '') as username
+		SELECT al.id, al.house_id, al.action, IFNULL(al.old_data, '') as old_data, IFNULL(al.new_data, '') as new_data, al.user_id, al.anon_hash, al.timestamp, IFNULL(u.username, '') as username
 		FROM audit_log al
 		LEFT JOIN users u ON al.user_id = u.id
 		WHERE al.house_id = ?
