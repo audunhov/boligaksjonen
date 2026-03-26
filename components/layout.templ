@@ -1,0 +1,21 @@
+package components
+
+templ Layout(title string, username string) {
+	<!DOCTYPE html>
+	<html lang="en" class="h-full bg-white">
+		<head>
+			<meta charset="UTF-8"/>
+			<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+			<title>{ title }</title>
+			<link rel="icon" type="image/svg+xml" href="/static/img/logo.svg"/>
+			<script src="https://cdn.tailwindcss.com"></script>
+			<script src="https://unpkg.com/htmx.org@2.0.4"></script>
+			<style>
+				dialog::backdrop { background: rgba(0,0,0,0.5); backdrop-filter: blur(2px); }
+			</style>
+		</head>
+		<body class="h-full">
+			{ children... }
+		</body>
+	</html>
+}

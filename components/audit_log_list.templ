@@ -1,0 +1,115 @@
+package components
+
+import (
+	"github.com/audunhov/tombolig/models"
+	"time"
+	"math"
+	"fmt"
+)
+
+func timeAgo(t time.Time) string {
+	duration := time.Since(t)
+	seconds := math.Floor(duration.Seconds())
+	if seconds < 60 {
+		return "akkurat nå"
+	}
+	minutes := math.Floor(seconds / 60)
+	if minutes < 60 {
+		return fmt.Sprintf("%.0f min siden", minutes)
+	}
+	hours := math.Floor(minutes / 60)
+	if hours < 24 {
+		return fmt.Sprintf("%.0f timer siden", hours)
+	}
+	days := math.Floor(hours / 24)
+	if days < 30 {
+		return fmt.Sprintf("%.0f dager siden", days)
+	}
+	months := math.Floor(days / 30)
+	if months < 12 {
+		return fmt.Sprintf("%.0f mnd siden", months)
+	}
+	years := math.Floor(months / 12)
+	return fmt.Sprintf("%.0f år siden", years)
+}
+
+func formatDate(t time.Time) string {
+	return t.Format("02.01.2006 15:04")
+}
+
+func getAuthor(l models.AuditLog) string {
+	if l.Username != "" {
+		return l.Username
+	}
+	return fmt.Sprintf("Anonym (%s)", l.AnonHash)
+}
+
+func isLast(log models.AuditLog, logs []models.AuditLog) bool {
+	if len(logs) == 0 { return true }
+	return logs[len(logs)-1].ID == log.ID
+}
+
+func getActionColor(action string) string {
+	switch action {
+	case "add": return "bg-green-100 ring-green-300"
+	case "update": return "bg-blue-100 ring-blue-300"
+	case "remove": return "bg-red-100 ring-red-300"
+	case "restore": return "bg-teal-100 ring-teal-300"
+	default: return "bg-gray-100 ring-gray-300"
+	}
+}
+
+func getActionText(action string) string {
+	switch action {
+	case "add": return "rapporterte denne boligen"
+	case "update": return "oppdaterte informasjonen"
+	case "remove": return "fjernet oppføringen"
+	case "restore": return "gjenopprettet oppføringen"
+	case "comment": return "kommenterte"
+	default: return action
+	}
+}
+
+templ AuditLogList(logs []models.AuditLog) {
+	if len(logs) == 0 {
+		<div class="text-xs text-gray-400 italic">Ingen historikk funnet.</div>
+	} else {
+		<ul role="list" class="space-y-6">
+			for _, log := range logs {
+				<li class="relative flex gap-x-4">
+					<div class={ "absolute left-0 top-0 flex w-6 justify-center", templ.KV("-bottom-6", !isLast(log, logs)) }>
+						<div class="w-px bg-gray-200"></div>
+					</div>
+					if log.Action == "comment" {
+						<div class="relative flex size-6 flex-none items-center justify-center bg-white">
+							<div class="size-6 flex-none rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-[10px] uppercase shadow-sm border border-white">
+								if log.Username != "" {
+									{ log.Username[0:1] }
+								} else {
+									A
+								}
+							</div>
+						</div>
+						<div class="flex-auto rounded-xl p-3 ring-1 ring-inset ring-gray-100 bg-gray-50/50">
+							<div class="flex justify-between gap-x-4">
+								<div class="py-0.5 text-xs leading-5 text-gray-500">
+									<span class="font-bold text-gray-900">{ getAuthor(log) }</span> kommenterte
+								</div>
+								<time datetime={ log.Timestamp.Format(time.RFC3339) } class="flex-none py-0.5 text-[10px] font-bold text-gray-400 uppercase">{ timeAgo(log.Timestamp) }</time>
+							</div>
+							<p class="text-xs leading-6 text-gray-600 italic">"{ log.NewData }"</p>
+						</div>
+					} else {
+						<div class="relative flex size-6 flex-none items-center justify-center bg-white">
+							<div class={ "size-2 rounded-full ring-1", getActionColor(log.Action) }></div>
+						</div>
+						<p class="flex-auto py-0.5 text-xs leading-5 text-gray-500">
+							<span class="font-bold text-gray-900">{ getAuthor(log) }</span> { getActionText(log.Action) }
+						</p>
+						<time datetime={ log.Timestamp.Format(time.RFC3339) } class="flex-none py-0.5 text-[10px] font-bold text-gray-400 uppercase">{ timeAgo(log.Timestamp) }</time>
+					}
+				</li>
+			}
+		</ul>
+	}
+}

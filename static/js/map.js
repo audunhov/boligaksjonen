@@ -251,75 +251,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const historyList = document.getElementById('aside_history_list');
         if (!historyList) return;
         historyList.innerHTML = '<div class="text-xs text-gray-400">Laster historikk...</div>';
-        
-        fetch(`/api/houses/history?id=${houseID}`)
-            .then(res => res.json())
-            .then(logs => {
-                if (logs.length === 0) {
-                    historyList.innerHTML = '<div class="text-xs text-gray-400 italic">Ingen historikk funnet.</div>';
-                    return;
-                }
-                historyList.innerHTML = '';
-                logs.forEach(log => {
-                    const li = document.createElement('li');
-                    li.className = 'relative flex gap-x-4';
-                    const timeStr = timeAgo(log.timestamp);
-                    const author = log.username || 'Anonym (' + log.anon_hash + ')';
-                    const initial = author.charAt(0).toUpperCase();
-
-                    if (log.action === 'comment') {
-                        li.innerHTML = `
-                            <div class="absolute -bottom-6 left-0 top-0 flex w-6 justify-center"><div class="w-px bg-gray-200"></div></div>
-                            <div class="relative mt-3 size-6 flex-none rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-[10px] uppercase outline outline-1 -outline-offset-1 outline-black/5">${initial}</div>
-                            <div class="flex-auto rounded-md p-3 ring-1 ring-inset ring-gray-200 bg-white shadow-sm">
-                                <div class="flex justify-between gap-x-4">
-                                    <div class="py-0.5 text-xs/5 text-gray-500"><span class="font-medium text-gray-900">${author}</span></div>
-                                    <time class="flex-none py-0.5 text-[10px] text-gray-400">${timeStr}</time>
-                                </div>
-                                <p class="text-xs sm:text-sm/6 text-gray-600">${log.new_data}</p>
-                            </div>
-                        `;
-                    } else {
-                        let actionMsg = "";
-                        switch(log.action) {
-                            case 'add': actionMsg = "rapporterte boligen"; break;
-                            case 'update': actionMsg = "oppdaterte oppføringen"; break;
-                            case 'remove': actionMsg = "fjernet oppføringen"; break;
-                            case 'restore': actionMsg = "gjenopprettet oppføringen"; break;
-                        }
-                        li.innerHTML = `
-                            <div class="absolute -bottom-6 left-0 top-0 flex w-6 justify-center"><div class="w-px bg-gray-200"></div></div>
-                            <div class="relative flex size-6 flex-none items-center justify-center bg-gray-50">
-                                <div class="size-1.5 rounded-full bg-gray-100 ring ring-gray-300"></div>
-                            </div>
-                            <p class="flex-auto py-0.5 text-xs/5 text-gray-500"><span class="font-medium text-gray-900">${author}</span> ${actionMsg}.</p>
-                            <time class="flex-none py-0.5 text-[10px] text-gray-400">${timeStr}</time>
-                        `;
-                    }
-                    historyList.appendChild(li);
-                });
-            });
+        htmx.ajax('GET', `/api/houses/history?id=${houseID}`, {target: '#aside_history_list'});
     }
 
-    window.submitComment = function(e) {
-        e.preventDefault();
-        const houseID = document.getElementById('comment_house_id').value;
-        const comment = document.getElementById('comment_text').value;
-        if (!comment) return;
-        const params = new URLSearchParams();
-        params.append('house_id', houseID);
-        params.append('comment', comment);
-        fetch('/api/houses/comment', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: params
-        }).then(res => {
-            if (res.ok) {
-                document.getElementById('comment_text').value = '';
-                window.refreshHistory(houseID);
-            }
-        });
-    }
+    // submitComment is now handled by htmx in the component
+
 
     // 3. Map Interaction Handlers
     map.on('click', () => {
@@ -346,7 +282,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 4. Fetch data
     fetch('/api/houses')
-        .then(res => res.json())
+        .then(res => {
+            if (!res.ok) throw new Error('Failed to fetch houses');
+            const contentType = res.headers.get('content-type');
+            if (!contentType || !contentType.includes('application/json')) {
+                throw new TypeError("Oops, we haven't got JSON!");
+            }
+            return res.json();
+        })
         .then(houses => {
             allHouses = houses;
             

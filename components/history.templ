@@ -1,0 +1,107 @@
+package components
+
+import (
+	"github.com/audunhov/tombolig/models"
+	"fmt"
+)
+
+templ History(username string, logs []models.AuditLog) {
+	@Layout("Boligaksjonen - Historikk", username) {
+		<div class="bg-gray-50 text-gray-900 font-sans min-h-full">
+			<div class="max-w-6xl mx-auto px-4 py-12">
+				<div class="flex items-center justify-between mb-10">
+					<div>
+						<a href="/kart" class="text-blue-600 hover:text-blue-700 font-bold text-sm flex items-center gap-2 mb-2 transition-colors">
+							← Tilbake til kartet
+						</a>
+						<h1 class="text-4xl font-black text-gray-900 tracking-tight">Endringshistorikk</h1>
+					</div>
+					<div class="bg-white px-4 py-2 rounded-xl shadow-sm border border-gray-100 text-sm font-medium text-gray-500">
+						Siste bidrag fra fellesskapet
+					</div>
+				</div>
+
+				<div class="bg-white rounded-2xl shadow-xl shadow-gray-200/50 border border-gray-100 overflow-hidden">
+					<div class="overflow-x-auto">
+						<table class="w-full text-left border-collapse">
+							<thead>
+								<tr class="bg-gray-50/50 border-b border-gray-100">
+									<th class="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest">Tidspunkt</th>
+									<th class="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest">Handling</th>
+									<th class="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest">Bidragsyter</th>
+									<th class="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest">Detaljer</th>
+									<th class="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest text-right">Handlinger</th>
+								</tr>
+							</thead>
+							<tbody class="divide-y divide-gray-50">
+								if len(logs) > 0 {
+									for _, log := range logs {
+										<tr class="hover:bg-gray-50/50 transition-colors">
+											<td class="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">
+												{ formatDate(log.Timestamp) }
+											</td>
+											<td class="px-6 py-4 whitespace-nowrap">
+												if log.Action == "add" {
+													<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-green-100 text-green-700 uppercase">
+														Ny bolig
+													</span>
+												} else if log.Action == "update" {
+													<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-100 text-blue-700 uppercase">
+														Oppdatert
+													</span>
+												} else if log.Action == "remove" {
+													<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-red-100 text-red-700 uppercase">
+														Fjernet
+													</span>
+												} else if log.Action == "restore" {
+													<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-teal-100 text-teal-700 uppercase">
+														Gjenopprettet
+													</span>
+												}
+											</td>
+											<td class="px-6 py-4 text-sm font-bold text-gray-800">
+												{ getAuthor(log) }
+											</td>
+											<td class="px-6 py-4 text-sm text-gray-600">
+												<div class="max-w-xs truncate" title={ func() string { if log.NewData != "" { return log.NewData }; return log.OldData }() }>
+													if log.NewData != "" {
+														{ log.NewData }
+													} else {
+														{ log.OldData }
+													}
+												</div>
+											</td>
+											<td class="px-6 py-4 text-right">
+												if log.Action == "remove" {
+													<form action="/houses/restore" method="POST" class="inline">
+														<input type="hidden" name="id" value={ fmt.Sprintf("%d", log.HouseID) }/>
+														<button type="submit" class="text-blue-600 hover:text-blue-800 text-xs font-black uppercase tracking-widest hover:underline">
+															Gjenopprett
+														</button>
+													</form>
+												}
+											</td>
+										</tr>
+									}
+								} else {
+									<tr>
+										<td colspan="5" class="px-6 py-20 text-center">
+											<div class="flex flex-col items-center">
+												<div class="w-16 h-16 bg-gray-100 text-gray-300 rounded-full flex items-center justify-center mb-4 text-2xl">?</div>
+												<p class="text-gray-400 font-medium">Ingen historikk funnet ennå.</p>
+											</div>
+										</td>
+									</tr>
+								}
+							</tbody>
+						</table>
+					</div>
+				</div>
+				
+				<footer class="mt-8 text-center text-gray-400 text-sm">
+					Boligaksjonen &copy; 2026 — En åpen dugnad for byen vår
+				</footer>
+			</div>
+		</div>
+	}
+}

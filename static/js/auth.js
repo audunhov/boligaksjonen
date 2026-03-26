@@ -53,52 +53,10 @@
         window.validateSignupForm();
     }
 
-    let isUsernameAvailable = true;
-
-    window.checkUsername = async function(username) {
-        const notice = document.getElementById('username_notice');
-        if (!username) {
-            if (notice) notice.classList.add('hidden');
-            return;
-        }
-
-        if (username.length < 4) {
-            if (notice) {
-                notice.classList.remove('hidden');
-                notice.innerText = 'Brukernavn må være minst 4 tegn';
-                notice.className = 'text-[9px] font-black uppercase tracking-widest mt-1 text-red-500';
-            }
-            isUsernameAvailable = false;
-            window.validateSignupForm();
-            return;
-        }
-
-        try {
-            const res = await fetch(`/api/auth/check-username?username=${encodeURIComponent(username)}`);
-            const data = await res.json();
-            isUsernameAvailable = !data.exists;
-
-            if (notice) {
-                notice.classList.remove('hidden');
-                if (isUsernameAvailable) {
-                    notice.innerText = 'Brukernavn er ledig';
-                    notice.className = 'text-[9px] font-black uppercase tracking-widest mt-1 text-green-500';
-                } else {
-                    notice.innerText = 'Brukernavn er tatt';
-                    notice.className = 'text-[9px] font-black uppercase tracking-widest mt-1 text-red-500';
-                }
-            }
-        } catch (e) {
-            console.error("Failed to check username", e);
-        }
-        window.validateSignupForm();
-    }
-
-    window.debouncedUsernameCheck = debounce((val) => window.checkUsername(val));
-
     window.validateSignupForm = function() {
         const passEl = document.getElementById('signup_password');
         const confirmEl = document.getElementById('signup_confirm');
+        const noticeEl = document.getElementById('username_notice');
         const submit = document.getElementById('signup_submit');
         
         if (!passEl || !confirmEl || !submit) return;
@@ -109,6 +67,7 @@
         
         const isMatch = pass === confirm && pass !== "";
         const isStrong = entropy >= 40;
+        const isUsernameAvailable = noticeEl && noticeEl.getAttribute('data-available') === 'true';
 
         if (confirm !== "" && !isMatch) {
             confirmEl.classList.add('border-red-500');
@@ -129,6 +88,9 @@
             submit.className = 'flex-1 py-3 bg-gray-200 cursor-not-allowed text-white font-black uppercase text-[10px] sm:text-xs rounded-2xl shadow-xl transition-all';
         }
     }
+
+    // Username check is now handled by htmx in components/auth_dialogs.templ
+
 
     window.validateSignup = function(e) {
         const pass = document.getElementById('signup_password').value;

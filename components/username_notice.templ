@@ -1,0 +1,9 @@
+package components
+
+templ UsernameNotice(exists bool) {
+	if exists {
+		<p id="username_notice" data-available="false" class="text-[9px] font-black uppercase tracking-widest mt-1 text-red-500">Brukernavnet er opptatt</p>
+	} else {
+		<p id="username_notice" data-available="true" class="text-[9px] font-black uppercase tracking-widest mt-1 text-green-500">Brukernavnet er ledig</p>
+	}
+}

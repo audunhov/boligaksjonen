@@ -1,0 +1,91 @@
+package components
+
+import (
+	"github.com/audunhov/tombolig/models"
+	"fmt"
+)
+
+templ Edit(username string, house models.House) {
+	@Layout("Edit House - Boligaksjonen", username) {
+		<style>
+			body { font-family: sans-serif; padding: 20px; max-width: 600px; margin: 0 auto; line-height: 1.6; }
+			.form-group { margin-bottom: 15px; }
+			label { display: block; font-weight: bold; }
+			input[type="text"], input[type="number"], textarea, select { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+			textarea { height: 100px; }
+			.actions { margin-top: 20px; }
+			.btn { padding: 10px 15px; text-decoration: none; border-radius: 4px; cursor: pointer; border: none; }
+			.btn-primary { background: #3498db; color: white; }
+			.btn-secondary { background: #95a5a6; color: white; }
+			.info { font-size: 0.9em; color: #666; margin-top: 10px; }
+		</style>
+		<h1>Edit House Entry</h1>
+		<p>Last updated by: <strong>{ house.LastUpdatedBy }</strong> on <strong>{ formatDate(house.UpdatedAt) }</strong></p>
+
+		<form action="/houses/update" method="POST">
+			<input type="hidden" name="id" value={ fmt.Sprintf("%d", house.ID) }/>
+			
+			<div class="form-group">
+				<label for="address">Address</label>
+				<input type="text" id="address" name="address" value={ house.Address } required/>
+			</div>
+
+			<div class="form-group">
+				<label for="lat">Latitude</label>
+				<input type="number" step="any" id="lat" name="lat" value={ fmt.Sprintf("%f", house.Latitude) } required/>
+			</div>
+
+			<div class="form-group">
+				<label for="lng">Longitude</label>
+				<input type="number" step="any" id="lng" name="lng" value={ fmt.Sprintf("%f", house.Longitude) } required/>
+			</div>
+
+			<div class="form-group">
+				<label for="ownership_type">Ownership Type</label>
+				<select id="ownership_type" name="ownership_type" onchange="toggleFreetext(this.value)">
+					<option value="kommune" selected?={ house.OwnershipType == "kommune" }>Kommune</option>
+					<option value="fylke" selected?={ house.OwnershipType == "fylke" }>Fylke</option>
+					<option value="stat" selected?={ house.OwnershipType == "stat" }>Stat</option>
+					<option value="privatperson" selected?={ house.OwnershipType == "privatperson" }>Privatperson</option>
+					<option value="selskap" selected?={ house.OwnershipType == "selskap" }>Selskap</option>
+					<option value="freetext" selected?={ house.OwnershipType != "kommune" && house.OwnershipType != "fylke" && house.OwnershipType != "stat" && house.OwnershipType != "privatperson" && house.OwnershipType != "selskap" }>Freetext / Other</option>
+				</select>
+			</div>
+
+			<div id="freetext_group" class="form-group" style={ fmt.Sprintf("display: %s;", func() string { if house.OwnershipType != "kommune" && house.OwnershipType != "fylke" && house.OwnershipType != "stat" && house.OwnershipType != "privatperson" && house.OwnershipType != "selskap" { return "block" }; return "none" }()) }>
+				<label for="ownership_freetext">Specify Ownership Type</label>
+				<input type="text" id="ownership_freetext" name="ownership_freetext" value={ house.OwnershipType }/>
+			</div>
+
+			<div class="form-group">
+				<label for="description">Description</label>
+				<textarea id="description" name="description" required>{ house.Description }</textarea>
+			</div>
+
+			<div class="form-group">
+				<label for="author">Your Name (optional)</label>
+				<input type="text" id="author" name="author" placeholder="Anonymous"/>
+			</div>
+
+			<div class="actions">
+				<button type="submit" class="btn btn-primary">Save Changes</button>
+				<a href="/" class="btn btn-secondary">Cancel</a>
+			</div>
+		</form>
+
+		<script>
+			function toggleFreetext(value) {
+				const freetextGroup = document.getElementById('freetext_group');
+				if (value === 'freetext') {
+					freetextGroup.style.display = 'block';
+					document.getElementById('ownership_freetext').required = true;
+				} else {
+					freetextGroup.style.display = 'none';
+					document.getElementById('ownership_freetext').required = false;
+				}
+			}
+		</script>
+
+		<p class="info">By clicking "Save Changes", you are updating this entry publicly. The latest version will be displayed on the map.</p>
+	}
+}

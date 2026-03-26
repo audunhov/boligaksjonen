@@ -4,14 +4,13 @@ import (
 	"crypto/sha256"
 	"encoding/json"
 	"fmt"
-	"html/template"
 	"log/slog"
 	"math"
 	"net/http"
 	"regexp"
 	"strconv"
-	"time"
 
+	"github.com/audunhov/tombolig/components"
 	"github.com/audunhov/tombolig/models"
 )
 
@@ -79,12 +78,6 @@ func HomeHandler(w http.ResponseWriter, r *http.Request) {
 		http.NotFound(w, r)
 		return
 	}
-	tmpl, err := template.ParseFiles("views/home.html")
-	if err != nil {
-		slog.Error("Failed to parse home template", "error", err)
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-		return
-	}
 	
 	var username string
 	userID := getLoggedInUserID(r)
@@ -97,27 +90,15 @@ func HomeHandler(w http.ResponseWriter, r *http.Request) {
 
 	stats := models.GetGlobalStats()
 
-	data := struct {
-		UserID   *int
-		Username string
-		Stats    models.Stats
-	}{
-		UserID:   userID,
-		Username: username,
-		Stats:    stats,
+	err := components.Home(username, stats).Render(r.Context(), w)
+	if err != nil {
+		slog.Error("Failed to render home component", "error", err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 	}
-	tmpl.Execute(w, data)
 }
 
 // MapHandler serves the interactive map page.
 func MapHandler(w http.ResponseWriter, r *http.Request) {
-	tmpl, err := template.ParseFiles("views/index.html")
-	if err != nil {
-		slog.Error("Failed to parse map template", "error", err)
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-		return
-	}
-	
 	var username string
 	userID := getLoggedInUserID(r)
 	if userID != nil {
@@ -127,14 +108,11 @@ func MapHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	data := struct {
-		UserID   *int
-		Username string
-	}{
-		UserID:   userID,
-		Username: username,
+	err := components.Map(username).Render(r.Context(), w)
+	if err != nil {
+		slog.Error("Failed to render map component", "error", err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 	}
-	tmpl.Execute(w, data)
 }
 
 // APIHousesHandler retrieves all house data (including deleted for search detection) and returns it as JSON.
@@ -153,7 +131,11 @@ func CheckUsernameHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	exists := models.UserExists(username)
-	json.NewEncoder(w).Encode(map[string]bool{"exists": exists})
+	
+	err := components.UsernameNotice(exists).Render(r.Context(), w)
+	if err != nil {
+		slog.Error("Failed to render username notice component", "error", err)
+	}
 }
 
 // UpdateHandler handles the POST request to update or add a house.
@@ -361,10 +343,15 @@ func AddCommentHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.WriteHeader(http.StatusCreated)
+	// Fetch updated logs
+	logs := models.GetAuditLogsForHouse(houseID)
+	err = components.AuditLogList(logs).Render(r.Context(), w)
+	if err != nil {
+		slog.Error("Failed to render audit log list component", "error", err)
+	}
 }
 
-// APIHouseHistoryHandler returns the audit log for a specific house as JSON.
+// APIHouseHistoryHandler returns the audit log for a specific house as HTML for htmx.
 func APIHouseHistoryHandler(w http.ResponseWriter, r *http.Request) {
 	id, _ := strconv.Atoi(r.URL.Query().Get("id"))
 	if id == 0 {
@@ -372,33 +359,31 @@ func APIHouseHistoryHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	logs := models.GetAuditLogsForHouse(id)
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(logs)
+	
+	err := components.AuditLogList(logs).Render(r.Context(), w)
+	if err != nil {
+		slog.Error("Failed to render audit log list", "error", err)
+	}
 }
 
 // HistoryHandler serves the audit log view.
 func HistoryHandler(w http.ResponseWriter, r *http.Request) {
 	logs := models.GetAuditLogs()
 	
-	funcMap := template.FuncMap{
-		"formatDate": func(t time.Time) string {
-			return t.Format("02.01.2006 15:04")
-		},
-		"getAuthor": func(l models.AuditLog) string {
-			if l.Username != "" {
-				return l.Username
-			}
-			return fmt.Sprintf("Anonym (%s)", l.AnonHash)
-		},
+	var username string
+	userID := getLoggedInUserID(r)
+	if userID != nil {
+		user, err := models.GetUserByID(*userID)
+		if err == nil {
+			username = user.Username
+		}
 	}
 
-	tmpl, err := template.New("history.html").Funcs(funcMap).ParseFiles("views/history.html")
+	err := components.History(username, logs).Render(r.Context(), w)
 	if err != nil {
-		slog.Error("Failed to parse history template", "error", err)
+		slog.Error("Failed to render history component", "error", err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-		return
 	}
-	tmpl.Execute(w, logs)
 }
 
 // EditHandler serves the edit form for a house.
@@ -410,17 +395,18 @@ func EditHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	funcMap := template.FuncMap{
-		"formatDate": func(t time.Time) string {
-			return t.Format("02.01.2006 15:04")
-		},
+	var username string
+	userID := getLoggedInUserID(r)
+	if userID != nil {
+		user, err := models.GetUserByID(*userID)
+		if err == nil {
+			username = user.Username
+		}
 	}
 
-	tmpl, err := template.New("edit.html").Funcs(funcMap).ParseFiles("views/edit.html")
+	err = components.Edit(username, house).Render(r.Context(), w)
 	if err != nil {
-		slog.Error("Failed to parse template", "error", err)
+		slog.Error("Failed to render edit component", "error", err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-		return
 	}
-	tmpl.Execute(w, house)
 }

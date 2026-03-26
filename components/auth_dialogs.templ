@@ -1,0 +1,56 @@
+package components
+
+templ AuthDialogs() {
+	{{
+		dialogClasses := "border-none rounded-[2.5rem] shadow-2xl p-0 w-[95%] sm:w-[90%] max-w-md overflow-hidden backdrop:backdrop-blur-md"
+		input := "w-full px-4 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all placeholder:text-gray-400 text-sm"
+		label := "block text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-2 ml-1"
+	}}
+
+	<dialog id="loginDialog" class={ dialogClasses }>
+		<div class="p-12">
+			<h2 class="text-3xl font-black text-gray-900 tracking-tighter mb-8 italic text-left">Logg inn</h2>
+			<form action="/login" method="POST" class="space-y-6 text-left">
+				<div><label class={ label }>Brukernavn</label><input type="text" name="username" required class={ input }/></div>
+				<div><label class={ label }>Passord</label><input type="password" name="password" required class={ input }/></div>
+				<div class="pt-4 flex gap-4">
+					<button type="button" class="flex-1 py-4 text-gray-400 font-bold" onclick="document.getElementById('loginDialog').close()">Avbryt</button>
+					<button type="submit" class="flex-1 py-4 bg-blue-600 hover:bg-blue-700 text-white font-black uppercase tracking-widest text-xs rounded-2xl shadow-xl transition-all">Logg inn</button>
+				</div>
+			</form>
+		</div>
+	</dialog>
+
+	<dialog id="signupDialog" class={ dialogClasses }>
+		<div class="p-12 text-center">
+			<h2 class="text-3xl font-black text-gray-900 tracking-tighter mb-8 italic text-left">Bli med</h2>
+			<form id="signupForm" action="/signup" method="POST" class="space-y-6 text-left" onsubmit="return window.validateSignup(event)">
+				<div>
+					<label class={ label }>Brukernavn</label>
+					<input type="text" id="signup_username" name="username" required class={ input } 
+						hx-get="/api/auth/check-username" 
+						hx-trigger="keyup changed delay:500ms" 
+						hx-target="#username_notice"
+						hx-on::after-request="window.validateSignupForm()"/>
+					<p id="username_notice" class="text-[9px] font-black uppercase tracking-widest mt-1 hidden"></p>
+				</div>
+				<div>
+					<label class={ label }>Passord</label>
+					<input type="password" id="signup_password" name="password" required class={ input } oninput="window.checkPasswordStrength(this.value)"/>
+					<div id="password_strength" class="mt-2 h-1 w-full bg-gray-100 rounded-full overflow-hidden">
+						<div id="strength_bar" class="h-full w-0 transition-all duration-500"></div>
+					</div>
+					<p id="strength_text" class="text-[9px] font-black uppercase tracking-widest mt-1 text-gray-400">Skriv inn passord</p>
+				</div>
+				<div>
+					<label class={ label }>Bekreft passord</label>
+					<input type="password" id="signup_confirm" name="confirm_password" required class={ input } oninput="window.validateSignupForm()"/>
+				</div>
+				<div class="pt-4 flex gap-4">
+					<button type="button" class="flex-1 py-4 text-gray-400 font-bold" onclick="document.getElementById('signupDialog').close()">Avbryt</button>
+					<button type="submit" id="signup_submit" class="flex-1 py-4 bg-gray-200 cursor-not-allowed text-white font-black uppercase tracking-widest text-xs rounded-2xl shadow-xl transition-all" disabled>Registrer deg</button>
+				</div>
+			</form>
+		</div>
+	</dialog>
+}
