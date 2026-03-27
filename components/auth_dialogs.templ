@@ -10,7 +10,8 @@ templ AuthDialogs() {
 	<dialog id="loginDialog" class={ dialogClasses }>
 		<div class="p-12">
 			<h2 class="text-3xl font-black text-gray-900 tracking-tighter mb-8 italic text-left">Logg inn</h2>
-			<form action="/login" method="POST" class="space-y-6 text-left">
+			<div id="login_error"></div>
+			<form hx-post="/login" hx-target="#login_error" class="space-y-6 text-left">
 				<div><label class={ label }>Brukernavn</label><input type="text" name="username" required class={ input }/></div>
 				<div><label class={ label }>Passord</label><input type="password" name="password" required class={ input }/></div>
 				<div class="pt-4 flex gap-4">
@@ -24,7 +25,8 @@ templ AuthDialogs() {
 	<dialog id="signupDialog" class={ dialogClasses }>
 		<div class="p-12 text-center">
 			<h2 class="text-3xl font-black text-gray-900 tracking-tighter mb-8 italic text-left">Bli med</h2>
-			<form id="signupForm" action="/signup" method="POST" class="space-y-6 text-left" onsubmit="return window.validateSignup(event)">
+			<div id="signup_error"></div>
+			<form id="signupForm" hx-post="/signup" hx-target="#signup_error" class="space-y-6 text-left" onsubmit="return window.validateSignup(event)">
 				<div>
 					<label class={ label }>Brukernavn</label>
 					<input type="text" id="signup_username" name="username" required class={ input } 

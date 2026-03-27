@@ -251,29 +251,51 @@ func SignupHandler(w http.ResponseWriter, r *http.Request) {
 	password := r.FormValue("password")
 	confirm := r.FormValue("confirm_password")
 
+	isHTMX := r.Header.Get("HX-Request") == "true"
+
 	if username == "" || password == "" {
+		if isHTMX {
+			components.AuthError("Brukernavn og passord er påkrevd").Render(r.Context(), w)
+			return
+		}
 		http.Error(w, "Username and password required", http.StatusBadRequest)
 		return
 	}
 
 	if len(username) < 4 {
+		if isHTMX {
+			components.AuthError("Brukernavn må være minst 4 tegn").Render(r.Context(), w)
+			return
+		}
 		http.Error(w, "Username must be at least 4 characters", http.StatusBadRequest)
 		return
 	}
 
 	if password != confirm {
+		if isHTMX {
+			components.AuthError("Passordene er ikke like").Render(r.Context(), w)
+			return
+		}
 		http.Error(w, "Passwords do not match", http.StatusBadRequest)
 		return
 	}
 
 	if calculateEntropy(password) < 40 {
-		http.Error(w, "Password too weak (requires 40 bits of entropy)", http.StatusBadRequest)
+		if isHTMX {
+			components.AuthError("Passordet er for svakt").Render(r.Context(), w)
+			return
+		}
+		http.Error(w, "Password too weak", http.StatusBadRequest)
 		return
 	}
 
 	err := models.CreateUser(username, password)
 	if err != nil {
 		slog.Error("Failed to create user", "error", err)
+		if isHTMX {
+			components.AuthError("Brukernavnet er tatt").Render(r.Context(), w)
+			return
+		}
 		http.Error(w, "Username already taken or other error", http.StatusConflict)
 		return
 	}
@@ -284,6 +306,11 @@ func SignupHandler(w http.ResponseWriter, r *http.Request) {
 		Value: strconv.Itoa(user.ID),
 		Path:  "/",
 	})
+
+	if isHTMX {
+		w.Header().Set("HX-Redirect", r.Referer())
+		return
+	}
 	http.Redirect(w, r, r.Referer(), http.StatusSeeOther)
 }
 
@@ -293,10 +320,18 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
+	r.ParseForm()
 	username := r.FormValue("username")
 	password := r.FormValue("password")
+	
+	isHTMX := r.Header.Get("HX-Request") == "true"
+
 	user, err := models.AuthenticateUser(username, password)
 	if err != nil {
+		if isHTMX {
+			components.AuthError("Feil brukernavn eller passord").Render(r.Context(), w)
+			return
+		}
 		http.Error(w, "Invalid username or password", http.StatusUnauthorized)
 		return
 	}
@@ -305,6 +340,11 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		Value: strconv.Itoa(user.ID),
 		Path:  "/",
 	})
+
+	if isHTMX {
+		w.Header().Set("HX-Redirect", r.Referer())
+		return
+	}
 	http.Redirect(w, r, r.Referer(), http.StatusSeeOther)
 }
 

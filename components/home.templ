@@ -16,9 +16,6 @@ templ Home(username string, stats models.Stats) {
 					if username != "" {
 						<span class="text-xs font-bold text-gray-500 mr-2 lowercase">hei, { username }</span>
 						<a href="/logout" class="px-5 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-black uppercase tracking-widest rounded-full transition-all">Logg ut</a>
-					} else {
-						<button class="px-5 py-2.5 text-gray-600 hover:text-blue-600 text-xs font-black uppercase tracking-widest rounded-full transition-all" onclick="document.getElementById('loginDialog').showModal()">Logg inn</button>
-						<button class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-black uppercase tracking-widest rounded-full shadow-lg shadow-blue-100 transition-all" onclick="document.getElementById('signupDialog').showModal()">Bli med</button>
 					}
 				</div>
 			</header>
@@ -36,11 +33,6 @@ templ Home(username string, stats models.Stats) {
 						<a href="/kart" class="px-10 py-5 bg-gray-900 hover:bg-black text-white text-lg font-black uppercase tracking-widest rounded-2xl shadow-2xl transition-all scale-100 hover:scale-105 active:scale-95">
 							Utforsk kartet nå
 						</a>
-						if username == "" {
-							<button onclick="document.getElementById('signupDialog').showModal()" class="px-10 py-5 bg-white border-2 border-gray-200 hover:border-blue-200 hover:bg-blue-50 text-gray-900 text-lg font-black uppercase tracking-widest rounded-2xl transition-all">
-								Registrer deg
-							</button>
-						}
 					</div>
 				</div>
 
@@ -79,9 +71,6 @@ templ Home(username string, stats models.Stats) {
 				<p class="text-[10px] font-black uppercase tracking-[0.2em]">Boligaksjonen &copy; 2026 — En åpen dugnad</p>
 			</footer>
 		</div>
-
-		@AuthDialogs()
-		<script src="/static/js/auth.js"></script>
 	}
 }
 

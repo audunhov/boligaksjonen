@@ -50,7 +50,7 @@ func AuthDialogs() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "\"><div class=\"p-12\"><h2 class=\"text-3xl font-black text-gray-900 tracking-tighter mb-8 italic text-left\">Logg inn</h2><form action=\"/login\" method=\"POST\" class=\"space-y-6 text-left\"><div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "\"><div class=\"p-12\"><h2 class=\"text-3xl font-black text-gray-900 tracking-tighter mb-8 italic text-left\">Logg inn</h2><div id=\"login_error\"></div><form hx-post=\"/login\" hx-target=\"#login_error\" class=\"space-y-6 text-left\"><div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -160,7 +160,7 @@ func AuthDialogs() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "\"><div class=\"p-12 text-center\"><h2 class=\"text-3xl font-black text-gray-900 tracking-tighter mb-8 italic text-left\">Bli med</h2><form id=\"signupForm\" action=\"/signup\" method=\"POST\" class=\"space-y-6 text-left\" onsubmit=\"return window.validateSignup(event)\"><div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "\"><div class=\"p-12 text-center\"><h2 class=\"text-3xl font-black text-gray-900 tracking-tighter mb-8 italic text-left\">Bli med</h2><div id=\"signup_error\"></div><form id=\"signupForm\" hx-post=\"/signup\" hx-target=\"#signup_error\" class=\"space-y-6 text-left\" onsubmit=\"return window.validateSignup(event)\"><div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
