@@ -27,6 +27,9 @@ WORKDIR /app
 # Copy the binary from the builder stage
 COPY --from=builder /app/boligaksjonen .
 
+# Copy static files
+COPY --from=builder /app/static ./static
+
 # Expose the application port
 EXPOSE 8080
 
