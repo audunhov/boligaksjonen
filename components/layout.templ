@@ -10,9 +10,6 @@ templ Layout(title string, username string) {
 			<link rel="icon" type="image/svg+xml" href="/static/img/logo.svg"/>
 			<script src="https://cdn.tailwindcss.com"></script>
 			<script src="https://unpkg.com/htmx.org@2.0.4"></script>
-			<style>
-				dialog::backdrop { background: rgba(0,0,0,0.5); backdrop-filter: blur(2px); }
-			</style>
 		</head>
 		<body class="h-full">
 			{ children... }

@@ -72,7 +72,6 @@ func calculateEntropy(password string) float64 {
 	return float64(len(password)) * math.Log2(pool)
 }
 
-// HomeHandler serves the landing page.
 func HomeHandler(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path != "/" {
 		http.NotFound(w, r)
@@ -97,7 +96,6 @@ func HomeHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// MapHandler serves the interactive map page.
 func MapHandler(w http.ResponseWriter, r *http.Request) {
 	var username string
 	userID := getLoggedInUserID(r)
@@ -115,7 +113,6 @@ func MapHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// APIHousesHandler retrieves all house data (including deleted for search detection) and returns it as JSON.
 func APIHousesHandler(w http.ResponseWriter, r *http.Request) {
 	houses := models.GetAllHousesFull()
 	w.Header().Set("Content-Type", "application/json")
@@ -123,7 +120,6 @@ func APIHousesHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(houses)
 }
 
-// CheckUsernameHandler checks if a username is available.
 func CheckUsernameHandler(w http.ResponseWriter, r *http.Request) {
 	username := r.URL.Query().Get("username")
 	if username == "" {
@@ -426,27 +422,3 @@ func HistoryHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// EditHandler serves the edit form for a house.
-func EditHandler(w http.ResponseWriter, r *http.Request) {
-	id, _ := strconv.Atoi(r.URL.Query().Get("id"))
-	house, err := models.GetHouseByID(id)
-	if err != nil {
-		http.Error(w, "House not found", http.StatusNotFound)
-		return
-	}
-
-	var username string
-	userID := getLoggedInUserID(r)
-	if userID != nil {
-		user, err := models.GetUserByID(*userID)
-		if err == nil {
-			username = user.Username
-		}
-	}
-
-	err = components.Edit(username, house).Render(r.Context(), w)
-	if err != nil {
-		slog.Error("Failed to render edit component", "error", err)
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-	}
-}
