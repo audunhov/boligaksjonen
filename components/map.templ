@@ -91,7 +91,12 @@ templ Map(username string) {
 				}
 			}
 		</style>
-		<div class="flex h-full min-h-0 overflow-hidden relative">
+		<div 
+			class="flex h-full min-h-0 overflow-hidden relative" 
+			x-data="{ sidebarOpen: false }" 
+			@open-sidebar.window="sidebarOpen = true" 
+			@close-sidebar.window="sidebarOpen = false"
+		>
 			<main class="flex-1 relative min-h-0">
 				<div id="map" class="h-full w-full"></div>
 
@@ -161,9 +166,9 @@ templ Map(username string) {
 			</main>
 
 			<!-- Detail Sidebar -->
-			<aside id="detail_aside" class="w-96 border-l border-gray-200 bg-white overflow-y-auto z-20">
+			<aside id="detail_aside" class="w-96 border-l border-gray-200 bg-white overflow-y-auto z-20" :class="{ 'is-open': sidebarOpen }">
 				<div class="lg:hidden sheet-handle"></div>
-				<button class="absolute right-6 top-4 text-gray-400 text-2xl hover:text-gray-900" onclick="window.closeAside()">&times;</button>
+				<button class="absolute right-6 top-4 text-gray-400 text-2xl hover:text-gray-900" @click="$dispatch('close-sidebar')">&times;</button>
 				
 				<div class="p-6 sm:p-8 pt-12 sm:pt-14">
 					<div id="aside_content_wrapper"></div>

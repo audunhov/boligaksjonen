@@ -70,21 +70,27 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    window.closeAside = function() {
-        const aside = document.getElementById('detail_aside');
-        if (aside) {
-            aside.classList.remove('is-open');
-            // Give the transition time to finish before invalidating map size
-            setTimeout(() => {
-                if (window.map) window.map.invalidateSize();
-            }, 350);
-        }
-        
+    // Listen for sidebar events to invalidate map size
+    window.addEventListener('open-sidebar', () => {
+        setTimeout(() => {
+            if (window.map) window.map.invalidateSize();
+        }, 350);
+    });
+
+    window.addEventListener('close-sidebar', () => {
+        setTimeout(() => {
+            if (window.map) window.map.invalidateSize();
+        }, 350);
+
         const url = new URL(window.location);
         if (url.searchParams.has('id')) {
             url.searchParams.delete('id');
             window.history.pushState({}, '', url);
         }
+    });
+
+    window.closeAside = function() {
+        window.dispatchEvent(new CustomEvent('close-sidebar'));
     }
 
     window.selectAddress = function(addr) {
@@ -118,13 +124,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     window.showHouseDetails = function(house) {
-        const aside = document.getElementById('detail_aside');
-        if (aside) {
-            aside.classList.add('is-open');
-            setTimeout(() => {
-                if (window.map) window.map.invalidateSize();
-            }, 350);
-        }
+        window.dispatchEvent(new CustomEvent('open-sidebar'));
 
         const wrapper = document.getElementById('aside_content_wrapper');
         if (wrapper) {
