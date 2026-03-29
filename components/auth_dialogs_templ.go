@@ -139,7 +139,7 @@ func AuthDialogs() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "\"></div><div class=\"pt-4 flex gap-4\"><button type=\"button\" class=\"flex-1 py-4 text-gray-400 font-bold\" onclick=\"document.getElementById('loginDialog').close()\">Avbryt</button> <button type=\"submit\" class=\"flex-1 py-4 bg-blue-600 hover:bg-blue-700 text-white font-black uppercase tracking-widest text-xs rounded-2xl shadow-xl transition-all\">Logg inn</button></div></form></div></dialog> ")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "\"></div><div class=\"pt-4 flex gap-4\"><button formmethod=\"dialog\" class=\"flex-1 py-4 text-gray-400 font-bold\">Avbryt</button> <button type=\"submit\" class=\"flex-1 py-4 bg-blue-600 hover:bg-blue-700 text-white font-black uppercase tracking-widest text-xs rounded-2xl shadow-xl transition-all\">Logg inn</button></div></form></div></dialog> ")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -293,7 +293,7 @@ func AuthDialogs() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 24, "\" oninput=\"window.validateSignupForm()\"></div><div class=\"pt-4 flex gap-4\"><button type=\"button\" class=\"flex-1 py-4 text-gray-400 font-bold\" onclick=\"document.getElementById('signupDialog').close()\">Avbryt</button> <button type=\"submit\" id=\"signup_submit\" class=\"flex-1 py-4 bg-gray-200 cursor-not-allowed text-white font-black uppercase tracking-widest text-xs rounded-2xl shadow-xl transition-all\" disabled>Registrer deg</button></div></form></div></dialog>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 24, "\" oninput=\"window.validateSignupForm()\"></div><div class=\"pt-4 flex gap-4\"><button formmethod=\"dialog\" class=\"flex-1 py-4 text-gray-400 font-bold\">Avbryt</button> <button type=\"submit\" id=\"signup_submit\" class=\"flex-1 py-4 bg-gray-200 cursor-not-allowed text-white font-black uppercase tracking-widest text-xs rounded-2xl shadow-xl transition-all\" disabled>Registrer deg</button></div></form></div></dialog>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

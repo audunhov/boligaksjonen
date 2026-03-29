@@ -15,7 +15,7 @@ templ AuthDialogs() {
 				<div><label class={ label }>Brukernavn</label><input type="text" name="username" required class={ input }/></div>
 				<div><label class={ label }>Passord</label><input type="password" name="password" required class={ input }/></div>
 				<div class="pt-4 flex gap-4">
-					<button type="button" class="flex-1 py-4 text-gray-400 font-bold" onclick="document.getElementById('loginDialog').close()">Avbryt</button>
+					<button formmethod="dialog" class="flex-1 py-4 text-gray-400 font-bold">Avbryt</button>
 					<button type="submit" class="flex-1 py-4 bg-blue-600 hover:bg-blue-700 text-white font-black uppercase tracking-widest text-xs rounded-2xl shadow-xl transition-all">Logg inn</button>
 				</div>
 			</form>
@@ -49,7 +49,7 @@ templ AuthDialogs() {
 					<input type="password" id="signup_confirm" name="confirm_password" required class={ input } oninput="window.validateSignupForm()"/>
 				</div>
 				<div class="pt-4 flex gap-4">
-					<button type="button" class="flex-1 py-4 text-gray-400 font-bold" onclick="document.getElementById('signupDialog').close()">Avbryt</button>
+					<button formmethod="dialog" class="flex-1 py-4 text-gray-400 font-bold">Avbryt</button>
 					<button type="submit" id="signup_submit" class="flex-1 py-4 bg-gray-200 cursor-not-allowed text-white font-black uppercase tracking-widest text-xs rounded-2xl shadow-xl transition-all" disabled>Registrer deg</button>
 				</div>
 			</form>
