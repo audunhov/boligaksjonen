@@ -2,12 +2,30 @@ package components
 
 import (
 	"github.com/audunhov/tombolig/models"
-	"fmt"
+	"encoding/json"
 )
 
 type SearchResult struct {
 	Address models.GeoNorgeAddress
 	House   *models.House
+}
+
+script onSelectResult(houseJSON string, addrJSON string) {
+	const resultsDiv = document.getElementById('header_lookup_results');
+	if(resultsDiv) resultsDiv.classList.add('hidden');
+	const modalResultsDiv = document.getElementById('lookup_results');
+	if(modalResultsDiv) modalResultsDiv.classList.add('hidden');
+
+	const house = JSON.parse(houseJSON);
+	const addr = JSON.parse(addrJSON);
+
+	if (house && house.id) {
+		window.map.flyTo([house.lat, house.lng], 17);
+		window.showHouseDetails(house);
+	} else {
+		window.openAddModal();
+		window.selectAddress(addr);
+	}
 }
 
 templ AddressSearchResults(results []SearchResult, isHeader bool) {
@@ -27,7 +45,7 @@ templ AddressSearchResults(results []SearchResult, isHeader bool) {
 templ headerResultItem(res SearchResult) {
 	<div 
 		class="p-4 cursor-pointer border-b border-gray-50 hover:bg-blue-50 transition-colors text-sm last:border-none flex justify-between items-center"
-		onclick={ selectResultScript(res) }
+		onclick={ onSelectResult(getHouseJSON(res), getAddrJSON(res)) }
 	>
 		<div>
 			<span class="font-bold text-gray-900 text-xs sm:text-sm">{ res.Address.Adressetekst }</span>
@@ -44,41 +62,22 @@ templ headerResultItem(res SearchResult) {
 templ modalResultItem(res SearchResult) {
 	<div 
 		class="p-3 cursor-pointer border-b border-gray-50 hover:bg-blue-50 transition-colors text-xs last:border-none"
-		onclick={ selectResultScript(res) }
+		onclick={ onSelectResult(getHouseJSON(res), getAddrJSON(res)) }
 	>
 		<span class="font-bold text-gray-800">{ res.Address.Adressetekst }</span> 
 		<span class="text-gray-500 ml-1">{ res.Address.Poststed }</span>
 	</div>
 }
 
-func selectResultScript(res SearchResult) templ.ComponentScript {
-	houseJSON := "{}"
-	if res.House != nil {
-		// Just a marker that we have a house
-		houseJSON = fmt.Sprintf(`{"id": %d, "lat": %f, "lng": %f, "address": "%s"}`, res.House.ID, res.House.Latitude, res.House.Longitude, res.House.Address)
+func getHouseJSON(res SearchResult) string {
+	if res.House == nil {
+		return "{}"
 	}
+	b, _ := json.Marshal(res.House)
+	return string(b)
+}
 
-	addrJSON := fmt.Sprintf(`{"adressetekst": "%s", "poststed": "%s", "representasjonspunkt": {"lat": %f, "lon": %f}, "kommunenummer": "%s", "gardsnummer": %d, "bruksnummer": %d, "festenummer": %d, "seksjonsnummer": %d}`, 
-		res.Address.Adressetekst, res.Address.Poststed, res.Address.Representasjonspunkt.Lat, res.Address.Representasjonspunkt.Lon,
-		res.Address.Kommunenummer, res.Address.Gardsnummer, res.Address.Bruksnummer, res.Address.Festenummer, res.Address.Seksjonsnummer)
-
-	return templ.ComponentScript{
-		Call: fmt.Sprintf(`(function(){ 
-			const resultsDiv = document.getElementById('header_lookup_results');
-			if(resultsDiv) resultsDiv.classList.add('hidden');
-			const modalResultsDiv = document.getElementById('lookup_results');
-			if(modalResultsDiv) modalResultsDiv.classList.add('hidden');
-
-			const house = %s;
-			const addr = %s;
-
-			if (house.id) {
-				window.map.flyTo([house.lat, house.lng], 17);
-				window.showHouseDetails(house);
-			} else {
-				window.openAddModal();
-				window.selectAddress(addr);
-			}
-		})()`, houseJSON, addrJSON),
-	}
+func getAddrJSON(res SearchResult) string {
+	b, _ := json.Marshal(res.Address)
+	return string(b)
 }

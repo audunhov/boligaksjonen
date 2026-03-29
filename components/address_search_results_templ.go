@@ -9,13 +9,37 @@ import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
 import (
-	"fmt"
+	"encoding/json"
 	"github.com/audunhov/tombolig/models"
 )
 
 type SearchResult struct {
 	Address models.GeoNorgeAddress
 	House   *models.House
+}
+
+func onSelectResult(houseJSON string, addrJSON string) templ.ComponentScript {
+	return templ.ComponentScript{
+		Name: `__templ_onSelectResult_8c97`,
+		Function: `function __templ_onSelectResult_8c97(houseJSON, addrJSON){const resultsDiv = document.getElementById('header_lookup_results');
+	if(resultsDiv) resultsDiv.classList.add('hidden');
+	const modalResultsDiv = document.getElementById('lookup_results');
+	if(modalResultsDiv) modalResultsDiv.classList.add('hidden');
+
+	const house = JSON.parse(houseJSON);
+	const addr = JSON.parse(addrJSON);
+
+	if (house && house.id) {
+		window.map.flyTo([house.lat, house.lng], 17);
+		window.showHouseDetails(house);
+	} else {
+		window.openAddModal();
+		window.selectAddress(addr);
+	}
+}`,
+		Call:       templ.SafeScript(`__templ_onSelectResult_8c97`, houseJSON, addrJSON),
+		CallInline: templ.SafeScriptInline(`__templ_onSelectResult_8c97`, houseJSON, addrJSON),
+	}
 }
 
 func AddressSearchResults(results []SearchResult, isHeader bool) templ.Component {
@@ -84,7 +108,7 @@ func headerResultItem(res SearchResult) templ.Component {
 			templ_7745c5c3_Var2 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templ.RenderScriptItems(ctx, templ_7745c5c3_Buffer, selectResultScript(res))
+		templ_7745c5c3_Err = templ.RenderScriptItems(ctx, templ_7745c5c3_Buffer, onSelectResult(getHouseJSON(res), getAddrJSON(res)))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -92,7 +116,7 @@ func headerResultItem(res SearchResult) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		var templ_7745c5c3_Var3 templ.ComponentScript = selectResultScript(res)
+		var templ_7745c5c3_Var3 templ.ComponentScript = onSelectResult(getHouseJSON(res), getAddrJSON(res))
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var3.Call)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
@@ -104,7 +128,7 @@ func headerResultItem(res SearchResult) templ.Component {
 		var templ_7745c5c3_Var4 string
 		templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(res.Address.Adressetekst)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `components/address_search_results.templ`, Line: 33, Col: 86}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `components/address_search_results.templ`, Line: 51, Col: 86}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 		if templ_7745c5c3_Err != nil {
@@ -117,7 +141,7 @@ func headerResultItem(res SearchResult) templ.Component {
 		var templ_7745c5c3_Var5 string
 		templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(res.Address.Poststed)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `components/address_search_results.templ`, Line: 34, Col: 81}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `components/address_search_results.templ`, Line: 52, Col: 81}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 		if templ_7745c5c3_Err != nil {
@@ -167,7 +191,7 @@ func modalResultItem(res SearchResult) templ.Component {
 			templ_7745c5c3_Var6 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templ.RenderScriptItems(ctx, templ_7745c5c3_Buffer, selectResultScript(res))
+		templ_7745c5c3_Err = templ.RenderScriptItems(ctx, templ_7745c5c3_Buffer, onSelectResult(getHouseJSON(res), getAddrJSON(res)))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -175,7 +199,7 @@ func modalResultItem(res SearchResult) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		var templ_7745c5c3_Var7 templ.ComponentScript = selectResultScript(res)
+		var templ_7745c5c3_Var7 templ.ComponentScript = onSelectResult(getHouseJSON(res), getAddrJSON(res))
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var7.Call)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
@@ -187,7 +211,7 @@ func modalResultItem(res SearchResult) templ.Component {
 		var templ_7745c5c3_Var8 string
 		templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(res.Address.Adressetekst)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `components/address_search_results.templ`, Line: 49, Col: 66}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `components/address_search_results.templ`, Line: 67, Col: 66}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
 		if templ_7745c5c3_Err != nil {
@@ -200,7 +224,7 @@ func modalResultItem(res SearchResult) templ.Component {
 		var templ_7745c5c3_Var9 string
 		templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(res.Address.Poststed)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `components/address_search_results.templ`, Line: 50, Col: 57}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `components/address_search_results.templ`, Line: 68, Col: 57}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
 		if templ_7745c5c3_Err != nil {
@@ -214,36 +238,17 @@ func modalResultItem(res SearchResult) templ.Component {
 	})
 }
 
-func selectResultScript(res SearchResult) templ.ComponentScript {
-	houseJSON := "{}"
-	if res.House != nil {
-		// Just a marker that we have a house
-		houseJSON = fmt.Sprintf(`{"id": %d, "lat": %f, "lng": %f, "address": "%s"}`, res.House.ID, res.House.Latitude, res.House.Longitude, res.House.Address)
+func getHouseJSON(res SearchResult) string {
+	if res.House == nil {
+		return "{}"
 	}
+	b, _ := json.Marshal(res.House)
+	return string(b)
+}
 
-	addrJSON := fmt.Sprintf(`{"adressetekst": "%s", "poststed": "%s", "representasjonspunkt": {"lat": %f, "lon": %f}, "kommunenummer": "%s", "gardsnummer": %d, "bruksnummer": %d, "festenummer": %d, "seksjonsnummer": %d}`,
-		res.Address.Adressetekst, res.Address.Poststed, res.Address.Representasjonspunkt.Lat, res.Address.Representasjonspunkt.Lon,
-		res.Address.Kommunenummer, res.Address.Gardsnummer, res.Address.Bruksnummer, res.Address.Festenummer, res.Address.Seksjonsnummer)
-
-	return templ.ComponentScript{
-		Call: fmt.Sprintf(`(function(){ 
-			const resultsDiv = document.getElementById('header_lookup_results');
-			if(resultsDiv) resultsDiv.classList.add('hidden');
-			const modalResultsDiv = document.getElementById('lookup_results');
-			if(modalResultsDiv) modalResultsDiv.classList.add('hidden');
-
-			const house = %s;
-			const addr = %s;
-
-			if (house.id) {
-				window.map.flyTo([house.lat, house.lng], 17);
-				window.showHouseDetails(house);
-			} else {
-				window.openAddModal();
-				window.selectAddress(addr);
-			}
-		})()`, houseJSON, addrJSON),
-	}
+func getAddrJSON(res SearchResult) string {
+	b, _ := json.Marshal(res.Address)
+	return string(b)
 }
 
 var _ = templruntime.GeneratedTemplate
