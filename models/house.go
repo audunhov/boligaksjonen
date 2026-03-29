@@ -54,6 +54,24 @@ type House struct {
 	SeksjonsNr int    `json:"snr"`
 }
 
+type GeoNorgeAddress struct {
+	Adressetekst            string `json:"adressetekst"`
+	Poststed                string `json:"poststed"`
+	Representasjonspunkt struct {
+		Lat float64 `json:"lat"`
+		Lon float64 `json:"lon"`
+	} `json:"representasjonspunkt"`
+	Kommunenummer string `json:"kommunenummer"`
+	Gardsnummer   int    `json:"gardsnummer"`
+	Bruksnummer   int    `json:"bruksnummer"`
+	Festenummer   int    `json:"festenummer"`
+	Seksjonsnummer int   `json:"seksjonsnummer"`
+}
+
+type GeoNorgeResponse struct {
+	Adresser []GeoNorgeAddress `json:"adresser"`
+}
+
 var db *sql.DB
 
 // InitDB initializes the SQLite database connection and creates the necessary tables.

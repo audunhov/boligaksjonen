@@ -7,6 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const map = L.map('map', {
         zoomControl: false
     }).setView([savedPos.lat, savedPos.lng], savedPos.zoom);
+    window.map = map; // Export to window for access from Templ scripts
 
     // Save position on move or zoom
     map.on('moveend', () => {
@@ -44,69 +45,15 @@ document.addEventListener('DOMContentLoaded', () => {
     L.control.layers(baseMaps, null, { position: 'bottomright' }).addTo(map);
 
     const markers = L.markerClusterGroup();
-    let allHouses = [];
-
-    // Helper for debouncing
-    function debounce(func, timeout = 300) {
-        let timer;
-        return (...args) => {
-            clearTimeout(timer);
-            timer = setTimeout(() => { func.apply(this, args); }, timeout);
-        };
-    }
-
-    const debouncedHeaderLookup = debounce((val) => window.lookupCoordinatesHeader(val));
-    const debouncedModalLookup = debounce(() => window.lookupCoordinates());
-    window.debouncedHeaderLookup = debouncedHeaderLookup;
-    window.debouncedModalLookup = debouncedModalLookup;
-
-    function timeAgo(date) {
-        const seconds = Math.floor((new Date() - new Date(date)) / 1000);
-        let interval = seconds / 31536000;
-        if (interval > 1) return Math.floor(interval) + " år siden";
-        interval = seconds / 2592000;
-        if (interval > 1) return Math.floor(interval) + " mnd siden";
-        interval = seconds / 86400;
-        if (interval > 1) return Math.floor(interval) + " dager siden";
-        interval = seconds / 3600;
-        if (interval > 1) return Math.floor(interval) + " timer siden";
-        interval = seconds / 60;
-        if (interval > 1) return Math.floor(interval) + " min siden";
-        return "akkurat nå";
-    }
 
     // 2. Define global UI helpers
     window.openAddModal = function() {
-        document.getElementById('editForm').reset();
-        document.getElementById('edit_id').value = "0";
-        document.getElementById('dialog_title').innerText = "Rapporter til Boligaksjonen";
-        document.getElementById('edit_freetext_group').classList.add('hidden');
-        document.getElementById('lookup_status').innerText = '';
-        document.getElementById('restore_notice').classList.add('hidden');
-        document.getElementById('editDialog').showModal();
+        // Use HTMX to load a fresh empty form
+        htmx.ajax('GET', '/houses/edit?id=0', {target: '#edit_dialog_container', swap: 'innerHTML'})
+            .then(() => {
+                document.getElementById('editDialog').showModal();
+            });
     }
-
-    window.openEditModal = function(id) {
-        const house = allHouses.find(h => h.id === id);
-        if (!house) return;
-
-        document.getElementById('edit_id').value = house.id;
-        document.getElementById('edit_address').value = house.address;
-        document.getElementById('edit_lat').value = house.lat;
-        document.getElementById('edit_lng').value = house.lng;
-        document.getElementById('edit_description').value = house.description;
-        
-        const standardTypes = ['privat-bolig', 'privat-bygård', 'offentlig', 'næring', 'industri', 'gård', 'annet'];
-        if (standardTypes.includes(house.ownership_type)) {
-            document.getElementById('edit_ownership_type').value = house.ownership_type;
-            document.getElementById('edit_freetext_group').classList.add('hidden');
-        } else {
-            document.getElementById('edit_ownership_type').value = 'freetext';
-            document.getElementById('edit_freetext_group').classList.remove('hidden');
-            document.getElementById('edit_ownership_freetext').value = house.ownership_type;
-        }
-        document.getElementById('editDialog').showModal();
-    };
 
     window.toggleFreetext = function(value) {
         const freetextGroup = document.getElementById('edit_freetext_group');
@@ -122,91 +69,32 @@ document.addEventListener('DOMContentLoaded', () => {
         if (aside) aside.classList.remove('is-open');
     }
 
-    window.lookupCoordinatesHeader = async function(address) {
-        const resultsDiv = document.getElementById('header_lookup_results');
-        if (!address) {
-            resultsDiv.classList.add('hidden');
-            return;
-        }
-
-        try {
-            const response = await fetch(`https://ws.geonorge.no/adresser/v1/sok?sok=${encodeURIComponent(address)}&treffPerSide=10`);
-            const data = await response.json();
-
-            if (data.adresser && data.adresser.length > 0) {
-                resultsDiv.classList.remove('hidden');
-                resultsDiv.innerHTML = '';
-                data.adresser.forEach(addr => {
-                    const existingHouse = allHouses.find(h => h.address === addr.adressetekst);
-                    const item = document.createElement('div');
-                    item.className = 'p-4 cursor-pointer border-b border-gray-50 hover:bg-blue-50 transition-colors text-sm last:border-none flex justify-between items-center';
-                    let actionText = existingHouse ? 'Vis' : 'Rapporter';
-                    let actionColor = existingHouse ? 'text-green-600' : 'text-blue-600';
-                    item.innerHTML = `<div><span class="font-bold text-gray-900 text-xs sm:text-sm">${addr.adressetekst}</span><span class="text-gray-400 ml-2 text-[10px] sm:text-xs">${addr.poststed}</span></div><span class="text-[10px] font-black ${actionColor} uppercase tracking-widest">${actionText}</span>`;
-                    item.onclick = () => {
-                        resultsDiv.classList.add('hidden');
-                        if (existingHouse) {
-                            map.flyTo([existingHouse.lat, existingHouse.lng], 17);
-                            window.showHouseDetails(existingHouse);
-                        } else {
-                            window.openAddModal();
-                            window.selectAddress(addr);
-                        }
-                    };
-                    resultsDiv.appendChild(item);
-                });
-            }
-        } catch (error) {
-            console.error('Header lookup error:', error);
-        }
-    }
-
-    window.lookupCoordinates = async function() {
-        const address = document.getElementById('edit_address').value;
-        const statusDiv = document.getElementById('lookup_status');
-        const resultsDiv = document.getElementById('lookup_results');
-        if (!address) {
-            statusDiv.innerText = 'Vennligst skriv inn en adresse.';
-            statusDiv.classList.add('text-red-500');
-            return;
-        }
-        statusDiv.innerText = 'Slår opp...';
-        statusDiv.classList.remove('text-red-500', 'text-green-500');
-        resultsDiv.classList.add('hidden');
-        resultsDiv.innerHTML = '';
-        try {
-            const response = await fetch(`https://ws.geonorge.no/adresser/v1/sok?sok=${encodeURIComponent(address)}&treffPerSide=10`);
-            const data = await response.json();
-            if (data.adresser && data.adresser.length > 0) {
-                statusDiv.innerText = `Fant ${data.adresser.length} resultater:`;
-                resultsDiv.classList.remove('hidden');
-                data.adresser.forEach(addr => {
-                    const item = document.createElement('div');
-                    item.className = 'p-3 cursor-pointer border-b border-gray-50 hover:bg-blue-50 transition-colors text-xs last:border-none';
-                    item.innerHTML = `<span class="font-bold text-gray-800">${addr.adressetekst}</span> <span class="text-gray-500 ml-1">${addr.poststed}</span>`;
-                    item.onclick = () => window.selectAddress(addr);
-                    resultsDiv.appendChild(item);
-                });
-            } else {
-                statusDiv.innerText = 'Ingen adresser funnet.';
-                statusDiv.classList.add('text-red-500');
-            }
-        } catch (error) {
-            statusDiv.innerText = 'Tilkoblingsfeil.';
-            statusDiv.classList.add('text-red-500');
-        }
-    }
-
     window.selectAddress = function(addr) {
-        document.getElementById('edit_address').value = addr.adressetekst;
-        document.getElementById('edit_lat').value = addr.representasjonspunkt.lat;
-        document.getElementById('edit_lng').value = addr.representasjonspunkt.lon;
+        const addrField = document.getElementById('edit_address');
+        const latField = document.getElementById('edit_lat');
+        const lngField = document.getElementById('edit_lng');
+        const knrField = document.getElementById('edit_knr');
+        const gnrField = document.getElementById('edit_gnr');
+        const bnrField = document.getElementById('edit_bnr');
+        const fnrField = document.getElementById('edit_fnr');
+        const snrField = document.getElementById('edit_snr');
+
+        if(addrField) addrField.value = addr.adressetekst;
+        if(latField) latField.value = addr.representasjonspunkt.lat;
+        if(lngField) lngField.value = addr.representasjonspunkt.lon;
+        if(knrField) knrField.value = addr.kommunenummer;
+        if(gnrField) gnrField.value = addr.gardsnummer;
+        if(bnrField) bnrField.value = addr.bruksnummer;
+        if(fnrField) fnrField.value = addr.festenummer;
+        if(snrField) snrField.value = addr.seksjonsnummer;
         
         const statusDiv = document.getElementById('lookup_status');
         const resultsDiv = document.getElementById('lookup_results');
-        statusDiv.innerText = `Valgt: ${addr.adressetekst}`;
-        statusDiv.classList.add('text-green-500');
-        resultsDiv.classList.add('hidden');
+        if(statusDiv) {
+            statusDiv.innerText = `Valgt: ${addr.adressetekst}`;
+            statusDiv.classList.add('text-green-500');
+        }
+        if(resultsDiv) resultsDiv.classList.add('hidden');
         
         map.flyTo([addr.representasjonspunkt.lat, addr.representasjonspunkt.lon], 17);
     }
@@ -214,47 +102,16 @@ document.addEventListener('DOMContentLoaded', () => {
     window.showHouseDetails = function(house) {
         const aside = document.getElementById('detail_aside');
         const placeholder = document.getElementById('aside_placeholder');
-        const content = document.getElementById('aside_content');
         if (placeholder) placeholder.classList.add('hidden');
-        if (content) content.classList.remove('hidden');
         
         if (aside) aside.classList.add('is-open');
 
-        document.getElementById('aside_address').innerText = house.address;
-        document.getElementById('aside_description').innerHTML = house.description.replace(/\r\n/g, '<br>').replace(/\n/g, '<br>');
-        document.getElementById('aside_author').innerText = house.last_updated_by;
-        document.getElementById('aside_date').innerText = new Date(house.updated_at).toLocaleString('no-NO');
-        document.getElementById('remove_house_id').value = house.id;
-        document.getElementById('comment_house_id').value = house.id;
-        document.getElementById('comment_section').classList.remove('hidden');
-        
-        const badge = document.getElementById('aside_badge');
-        const type = (house.ownership_type || 'annet').toLowerCase().trim();
-        const colors = {
-            'privat-bolig': 'bg-green-100 text-green-700',
-            'privat-bygård': 'bg-green-100 text-green-700',
-            'offentlig': 'bg-blue-100 text-blue-700',
-            'næring': 'bg-yellow-100 text-yellow-800',
-            'industri': 'bg-gray-100 text-gray-700',
-            'gård': 'bg-orange-100 text-orange-800',
-            'annet': 'bg-gray-100 text-gray-500'
-        };
-        badge.innerHTML = `<span class="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest ${colors[type] || 'bg-gray-100 text-gray-500'}">${type.replace('-', ' ')}</span>`;
-        if (document.getElementById('aside_edit_btn')) {
-            document.getElementById('aside_edit_btn').onclick = () => window.openEditModal(house.id);
+        const wrapper = document.getElementById('aside_content_wrapper');
+        if (wrapper) {
+            wrapper.innerHTML = '<div class="text-center py-20 text-gray-400 text-sm font-medium">Laster detaljer...</div>';
+            htmx.ajax('GET', `/houses/details?id=${house.id}`, {target: '#aside_content_wrapper', swap: 'innerHTML'});
         }
-
-        window.refreshHistory(house.id);
     }
-
-    window.refreshHistory = function(houseID) {
-        const historyList = document.getElementById('aside_history_list');
-        if (!historyList) return;
-        historyList.innerHTML = '<div class="text-xs text-gray-400">Laster historikk...</div>';
-        htmx.ajax('GET', `/api/houses/history?id=${houseID}`, {target: '#aside_history_list'});
-    }
-
-    // submitComment is now handled by htmx in the component
 
 
     // 3. Map Interaction Handlers
@@ -273,7 +130,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (data.adresser && data.adresser.length > 0) {
                 const addr = data.adresser[0];
                 window.openAddModal();
-                window.selectAddress(addr);
+                // Wait for HTMX to potentially finish loading the modal before selecting address
+                setTimeout(() => window.selectAddress(addr), 100);
             }
         } catch (error) {
             console.error('Reverse geocoding error:', error);
@@ -291,8 +149,6 @@ document.addEventListener('DOMContentLoaded', () => {
             return res.json();
         })
         .then(houses => {
-            allHouses = houses;
-            
             const customIcon = L.divIcon({
                 className: 'custom-div-icon',
                 html: `
@@ -320,8 +176,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
     window.showHouseDetailsById = function(id) {
-        const h = allHouses.find(house => house.id === id);
-        if (h) window.showHouseDetails(h);
+        window.showHouseDetails({id: id});
     }
 
     setTimeout(() => map.invalidateSize(), 100);

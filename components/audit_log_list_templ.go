@@ -150,7 +150,7 @@ func AuditLogList(logs []models.AuditLog) templ.Component {
 					return templ_7745c5c3_Err
 				}
 				if log.Action == "comment" {
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "<div class=\"relative flex size-6 flex-none items-center justify-center bg-white\"><div class=\"size-6 flex-none rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-[10px] uppercase shadow-sm border border-white\">")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "<div class=\"relative flex size-6 flex-none items-center justify-center bg-white text-wrap\"><div class=\"size-6 flex-none rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-[10px] uppercase shadow-sm border border-white\">")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
@@ -170,7 +170,7 @@ func AuditLogList(logs []models.AuditLog) templ.Component {
 							return templ_7745c5c3_Err
 						}
 					}
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "</div></div><div class=\"flex-auto rounded-xl p-3 ring-1 ring-inset ring-gray-100 bg-gray-50/50\"><div class=\"flex justify-between gap-x-4\"><div class=\"py-0.5 text-xs leading-5 text-gray-500\"><span class=\"font-bold text-gray-900\">")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "</div></div><div class=\"flex-auto rounded-xl p-3 ring-1 ring-inset ring-gray-100 bg-gray-50/50 min-w-0\"><div class=\"flex justify-between gap-x-4\"><div class=\"py-0.5 text-xs leading-5 text-gray-500 break-words\"><span class=\"font-bold text-gray-900\">")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
@@ -209,14 +209,14 @@ func AuditLogList(logs []models.AuditLog) templ.Component {
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "</time></div><p class=\"text-xs leading-6 text-gray-600 italic\">\"")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "</time></div><p class=\"text-xs leading-6 text-gray-600 italic break-words\">\"")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 					var templ_7745c5c3_Var8 string
 					templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(log.NewData)
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `components/audit_log_list.templ`, Line: 100, Col: 71}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `components/audit_log_list.templ`, Line: 100, Col: 83}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
 					if templ_7745c5c3_Err != nil {
@@ -249,7 +249,7 @@ func AuditLogList(logs []models.AuditLog) templ.Component {
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 15, "\"></div></div><p class=\"flex-auto py-0.5 text-xs leading-5 text-gray-500\"><span class=\"font-bold text-gray-900\">")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 15, "\"></div></div><p class=\"flex-auto py-0.5 text-xs leading-5 text-gray-500 break-words min-w-0\"><span class=\"font-bold text-gray-900\">")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}

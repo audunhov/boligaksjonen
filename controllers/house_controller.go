@@ -7,6 +7,7 @@ import (
 	"log/slog"
 	"math"
 	"net/http"
+	"net/url"
 	"regexp"
 	"strconv"
 
@@ -395,10 +396,107 @@ func APIHouseHistoryHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	logs := models.GetAuditLogsForHouse(id)
-	
+
 	err := components.AuditLogList(logs).Render(r.Context(), w)
 	if err != nil {
-		slog.Error("Failed to render audit log list", "error", err)
+		slog.Error("Failed to render audit log list component", "error", err)
+	}
+}
+
+// HouseDetailsHandler returns the full sidebar HTML for a specific house.
+func HouseDetailsHandler(w http.ResponseWriter, r *http.Request) {
+	id, _ := strconv.Atoi(r.URL.Query().Get("id"))
+	if id == 0 {
+		http.Error(w, "House ID required", http.StatusBadRequest)
+		return
+	}
+
+	house, err := models.GetHouseByID(id)
+	if err != nil {
+		http.Error(w, "House not found", http.StatusNotFound)
+		return
+	}
+
+	logs := models.GetAuditLogsForHouse(id)
+
+	var username string
+	userID := getLoggedInUserID(r)
+	if userID != nil {
+		user, err := models.GetUserByID(*userID)
+		if err == nil {
+			username = user.Username
+		}
+	}
+
+	err = components.HouseDetails(house, logs, username).Render(r.Context(), w)
+	if err != nil {
+		slog.Error("Failed to render house details component", "error", err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+	}
+}
+
+// APIAddressLookupHandler proxies address lookup to GeoNorge and returns rendered results.
+func APIAddressLookupHandler(w http.ResponseWriter, r *http.Request) {
+	query := r.URL.Query().Get("q")
+	isHeader := r.URL.Query().Get("header") == "true"
+	if query == "" {
+		w.Write([]byte(""))
+		return
+	}
+
+	url := fmt.Sprintf("https://ws.geonorge.no/adresser/v1/sok?sok=%s&treffPerSide=10", url.QueryEscape(query))
+	resp, err := http.Get(url)
+	if err != nil {
+		slog.Error("GeoNorge API error", "error", err)
+		http.Error(w, "GeoNorge error", http.StatusBadGateway)
+		return
+	}
+	defer resp.Body.Close()
+
+	var geonorgeResp models.GeoNorgeResponse
+	if err := json.NewDecoder(resp.Body).Decode(&geonorgeResp); err != nil {
+		slog.Error("GeoNorge decode error", "error", err)
+		http.Error(w, "Decode error", http.StatusInternalServerError)
+		return
+	}
+
+	allHouses := models.GetAllHousesFull()
+	results := make([]components.SearchResult, 0, len(geonorgeResp.Adresser))
+
+	for _, addr := range geonorgeResp.Adresser {
+		var foundHouse *models.House
+		for _, h := range allHouses {
+			if h.Address == addr.Adressetekst {
+				foundHouse = &h
+				break
+			}
+		}
+		results = append(results, components.SearchResult{
+			Address: addr,
+			House:   foundHouse,
+		})
+	}
+
+	err = components.AddressSearchResults(results, isHeader).Render(r.Context(), w)
+	if err != nil {
+		slog.Error("Render search results error", "error", err)
+	}
+}
+
+// HouseEditHandler returns the edit form for a house, either empty (id=0) or populated.
+func HouseEditHandler(w http.ResponseWriter, r *http.Request) {
+	id, _ := strconv.Atoi(r.URL.Query().Get("id"))
+	var house *models.House
+	if id != 0 {
+		h, err := models.GetHouseByID(id)
+		if err == nil {
+			house = &h
+		}
+	}
+
+	err := components.EditDialog(house).Render(r.Context(), w)
+	if err != nil {
+		slog.Error("Failed to render edit dialog", "error", err)
 	}
 }
 
