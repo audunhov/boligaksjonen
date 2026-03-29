@@ -49,10 +49,16 @@ document.addEventListener('DOMContentLoaded', () => {
     // 2. Define global UI helpers
     window.openAddModal = function() {
         // Use HTMX to load a fresh empty form
-        htmx.ajax('GET', '/houses/edit?id=0', {target: '#edit_dialog_container', swap: 'innerHTML'})
-            .then(() => {
+        htmx.ajax('GET', '/houses/edit?id=0', {target: '#edit_dialog_container', swap: 'innerHTML'});
+        
+        // Listen for the specific request to finish
+        const onFinish = (e) => {
+            if (e.detail.pathInfo.requestPath === '/houses/edit?id=0') {
                 document.getElementById('editDialog').showModal();
-            });
+                document.body.removeEventListener('htmx:afterOnLoad', onFinish);
+            }
+        };
+        document.body.addEventListener('htmx:afterOnLoad', onFinish);
     }
 
     window.toggleFreetext = function(value) {
@@ -66,7 +72,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
     window.closeAside = function() {
         const aside = document.getElementById('detail_aside');
-        if (aside) aside.classList.remove('is-open');
+        if (aside) {
+            aside.classList.remove('is-open');
+            // Give the transition time to finish before invalidating map size
+            setTimeout(() => {
+                if (window.map) window.map.invalidateSize();
+            }, 350);
+        }
+        
+        const url = new URL(window.location);
+        if (url.searchParams.has('id')) {
+            url.searchParams.delete('id');
+            window.history.pushState({}, '', url);
+        }
     }
 
     window.selectAddress = function(addr) {
@@ -101,25 +119,30 @@ document.addEventListener('DOMContentLoaded', () => {
 
     window.showHouseDetails = function(house) {
         const aside = document.getElementById('detail_aside');
-        const placeholder = document.getElementById('aside_placeholder');
-        if (placeholder) placeholder.classList.add('hidden');
-        
-        if (aside) aside.classList.add('is-open');
+        if (aside) {
+            aside.classList.add('is-open');
+            setTimeout(() => {
+                if (window.map) window.map.invalidateSize();
+            }, 350);
+        }
 
         const wrapper = document.getElementById('aside_content_wrapper');
         if (wrapper) {
             wrapper.innerHTML = '<div class="text-center py-20 text-gray-400 text-sm font-medium">Laster detaljer...</div>';
             htmx.ajax('GET', `/houses/details?id=${house.id}`, {target: '#aside_content_wrapper', swap: 'innerHTML'});
         }
+
+        const url = new URL(window.location);
+        if (url.searchParams.get('id') !== String(house.id)) {
+            url.searchParams.set('id', house.id);
+            window.history.pushState({houseId: house.id}, '', url);
+        }
     }
 
 
     // 3. Map Interaction Handlers
     map.on('click', () => {
-        // Hide sidebar/bottom-sheet on mobile/tablet when map is clicked
-        if (window.innerWidth < 1024) {
-            window.closeAside();
-        }
+        window.closeAside();
     });
 
     map.on('dblclick', async (e) => {
@@ -161,9 +184,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 iconAnchor: [20, 40]
             });
 
+            const urlParams = new URLSearchParams(window.location.search);
+            const initialId = urlParams.get('id');
+            let targetHouse = null;
+
             houses.forEach(h => {
                 // Only show active houses on the map
                 if (h.is_deleted) return;
+
+                if (initialId && h.id === parseInt(initialId)) {
+                    targetHouse = h;
+                }
 
                 const m = L.marker([h.lat, h.lng], { icon: customIcon });
                 m.on('click', () => {
@@ -173,6 +204,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 markers.addLayer(m);
             });
             map.addLayer(markers);
+
+            if (targetHouse) {
+                map.flyTo([targetHouse.lat, targetHouse.lng], 17);
+                window.showHouseDetails(targetHouse);
+            }
         });
 
     window.showHouseDetailsById = function(id) {

@@ -39,6 +39,17 @@ templ Map(username string) {
 				}
 			}
 
+			/* Detail Sidebar Transition */
+			#detail_aside {
+				transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.3s;
+				visibility: hidden;
+				transform: translateX(100%);
+			}
+			#detail_aside.is-open {
+				visibility: visible;
+				transform: translateX(0);
+			}
+
 			/* Mobile/Medium Bottom Sheet Styles */
 			@media (max-width: 1023px) {
 				#detail_aside {
@@ -65,6 +76,18 @@ templ Map(username string) {
 					background: #e5e7eb;
 					border-radius: 2px;
 					margin: 12px auto;
+				}
+			}
+
+			/* Desktop Pushing Map Logic */
+			@media (min-width: 1024px) {
+				#detail_aside {
+					display: none;
+				}
+				#detail_aside.is-open {
+					display: block;
+					position: relative;
+					transform: none;
 				}
 			}
 		</style>
@@ -138,18 +161,11 @@ templ Map(username string) {
 			</main>
 
 			<!-- Detail Sidebar -->
-			<aside id="detail_aside" class="w-96 border-l border-gray-200 bg-white overflow-y-auto hidden lg:block transition-all duration-300 translate-x-full absolute right-0 top-0 bottom-0 z-20 lg:relative lg:translate-x-0">
+			<aside id="detail_aside" class="w-96 border-l border-gray-200 bg-white overflow-y-auto z-20">
 				<div class="lg:hidden sheet-handle"></div>
-				<button class="lg:hidden absolute right-6 top-4 text-gray-400 text-2xl" onclick="window.closeAside()">&times;</button>
+				<button class="absolute right-6 top-4 text-gray-400 text-2xl hover:text-gray-900" onclick="window.closeAside()">&times;</button>
 				
-				<div class="p-6 sm:p-8">
-					<div id="aside_placeholder" class="text-center py-20">
-						<div class="w-16 h-16 bg-gray-50 rounded-2xl flex items-center justify-center mx-auto mb-4 text-gray-300 border border-gray-100 shadow-sm">
-							<svg class="size-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/><path d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z"/></svg>
-						</div>
-						<h3 class="font-bold text-gray-900 tracking-tight">Ingen bolig valgt</h3>
-						<p class="text-xs text-gray-400 mt-1">Dobbeltklikk i kartet for å rapportere en ny bolig.</p>
-					</div>
+				<div class="p-6 sm:p-8 pt-12 sm:pt-14">
 					<div id="aside_content_wrapper"></div>
 				</div>
 			</aside>
